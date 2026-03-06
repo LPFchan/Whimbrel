@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function pushHistory(stepIndex) {
     try {
-      history.pushState({ step: stepIndex }, "", `#step${stepIndex + 1}`);
+      history.pushState({ tab: 'keys', step: stepIndex }, "", `#step${stepIndex + 1}`);
     } catch (e) {
       // file:// protocol restricts pushState in some browsers
     }
@@ -286,20 +286,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function replaceHistory(stepIndex) {
     try {
-      history.replaceState({ step: stepIndex }, "", `#step${stepIndex + 1}`);
+      history.replaceState({ tab: 'keys', step: stepIndex }, "", `#step${stepIndex + 1}`);
     } catch (e) {
       // file:// protocol restricts replaceState in some browsers
     }
   }
 
+  function switchTabUI(tabId) {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabBtns.forEach(b => {
+      b.classList.remove('active');
+      if (b.dataset.tab === tabId) b.classList.add('active');
+    });
+    tabContents.forEach(c => {
+      c.style.display = 'none';
+      c.classList.remove('active');
+      if (c.id === tabId) {
+        c.style.display = 'block';
+        c.classList.add('active');
+      }
+    });
+  }
+
   window.addEventListener("popstate", (e) => {
-    if (e.state !== null && typeof e.state.step === 'number') {
-      showStep(e.state.step, false);
+    if (e.state !== null) {
+      if (e.state.tab === 'keys') {
+        switchTabUI('tab-keys');
+        if (typeof e.state.step === 'number') {
+          showStep(e.state.step, false);
+        }
+      } else if (e.state.tab === 'firmware') {
+        switchTabUI('tab-firmware');
+        if (typeof e.state.fwStep === 'number') {
+          showFwStep(e.state.fwStep, false);
+        }
+      }
     }
   });
 
   // Set initial history state
-  history.replaceState({ step: 0 }, "", "#step1");
+  history.replaceState({ tab: 'firmware', fwStep: 0 }, "", "#firmware-step1");
 
   async function runTimeout(containerEl, circleEl, ms) {
     containerEl.classList.add("visible");
@@ -321,6 +348,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!isSupported()) {
     el.mainPanel.style.display = "none";
+    const mainTabs = document.getElementById("main-tabs");
+    if (mainTabs) mainTabs.style.display = "none";
     el.unsupportedMsg.style.display = "block";
     return;
   }
@@ -594,6 +623,72 @@ document.addEventListener("DOMContentLoaded", () => {
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
 
+  let fwCurrentStepIdx = 0; // 0: Select Device, 1: Instructions, 2: Flash Firmware
+  const fwStep1 = document.getElementById("fw-step-1");
+  const fwStepInstructions = document.getElementById("fw-step-instructions");
+  const fwStep2 = document.getElementById("fw-step-2");
+  const fwDeviceTitle = document.getElementById("fw-device-title");
+
+  function showFwStep(stepIndex, pushStateFlag = true) {
+    if (fwCurrentStepIdx === stepIndex) return;
+    
+    if (pushStateFlag && stepIndex > fwCurrentStepIdx) {
+      try { history.pushState({ tab: 'firmware', fwStep: stepIndex }, "", `#firmware-step${stepIndex + 1}`); } catch (e) {}
+    }
+
+    const visibleEls = [fwStep1, fwStepInstructions, fwStep2].filter(e => e && e.classList.contains('step-visible'));
+    visibleEls.forEach(e => e.classList.add('step-fading-out'));
+    
+    setTimeout(() => {
+      animateHeightChange(() => {
+        fwCurrentStepIdx = stepIndex;
+        
+        [fwStep1, fwStepInstructions, fwStep2].forEach(e => {
+          if (e) {
+            e.classList.remove("step-visible", "step-fading-out");
+            e.classList.add("step-hidden");
+          }
+        });
+
+        if (stepIndex === 0 && fwStep1) {
+          fwStep1.classList.remove("step-hidden");
+          fwStep1.classList.add("step-visible");
+        } else if (stepIndex === 1 && fwStepInstructions) {
+          fwStepInstructions.classList.remove("step-hidden");
+          fwStepInstructions.classList.add("step-visible");
+        } else if (stepIndex === 2 && fwStep2) {
+          fwStep2.classList.remove("step-hidden");
+          fwStep2.classList.add("step-visible");
+        }
+      });
+    }, 200);
+  }
+
+  const btnFwInstructionsBack = document.getElementById("btn-fw-instructions-back");
+  if (btnFwInstructionsBack) {
+    btnFwInstructionsBack.addEventListener("click", () => {
+      if (fwCurrentStepIdx > 0) {
+        history.back();
+      }
+    });
+  }
+
+  const btnFwBack = document.getElementById("btn-fw-back");
+  if (btnFwBack) {
+    btnFwBack.addEventListener("click", () => {
+      if (fwCurrentStepIdx > 0) {
+        history.back();
+      }
+    });
+  }
+
+  const btnFwContinue = document.getElementById("btn-fw-continue");
+  if (btnFwContinue) {
+    btnFwContinue.addEventListener("click", () => {
+      showFwStep(2);
+    });
+  }
+
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       tabBtns.forEach(b => b.classList.remove('active'));
@@ -609,15 +704,17 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Update history
       if (btn.dataset.tab === 'tab-keys') {
-        history.replaceState({ step: currentStepIdx }, "", `#step${currentStepIdx + 1}`);
+        try { history.replaceState({ tab: 'keys', step: currentStepIdx }, "", `#step${currentStepIdx + 1}`); } catch (e) {}
       } else {
-        history.replaceState({ tab: 'firmware' }, "", `#firmware`);
+        try { history.replaceState({ tab: 'firmware', fwStep: fwCurrentStepIdx }, "", `#firmware-step${fwCurrentStepIdx + 1}`); } catch (e) {}
       }
     });
   });
 
-  const fwRadios = document.querySelectorAll('input[name="fw-device"]');
+  const btnFwGuillemot = document.getElementById("btn-fw-guillemot");
+  const btnFwUguisu = document.getElementById("btn-fw-uguisu");
   const fwReleaseInfo = document.getElementById("fw-release-info");
+  const fwReleaseDropdown = document.getElementById("fw-release-dropdown");
   const btnFlashFw = document.getElementById("btn-flash-fw");
   const fwStatus = document.getElementById("fw-status");
   const fwProgressContainer = document.getElementById("fw-progress-container");
@@ -625,40 +722,91 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let latestFwZipUrl = null;
   let latestFwZipBuffer = null;
+  let allReleases = [];
 
-  async function fetchLatestRelease(repoName) {
+  async function fetchReleases(repoName) {
     try {
-      fwReleaseInfo.innerHTML = `Fetching latest release for ${repoName}...`;
+      fwReleaseInfo.innerHTML = `<span>Fetching releases for ${repoName}...</span>`;
+      fwReleaseDropdown.innerHTML = "";
       btnFlashFw.disabled = true;
       latestFwZipUrl = null;
       latestFwZipBuffer = null;
+      allReleases = [];
 
-      const res = await fetch(`https://api.github.com/repos/LPFchan/${repoName}/releases/latest`);
-      if (!res.ok) throw new Error("Failed to fetch release info");
+      const res = await fetch(`https://api.github.com/repos/LPFchan/${repoName}/releases`);
+      if (!res.ok) throw new Error("Failed to fetch releases");
       
       const data = await res.json();
-      const zipAsset = data.assets.find(a => a.name.endsWith('.zip'));
+      allReleases = data.filter(r => r.assets && r.assets.some(a => a.name.endsWith('.zip')));
       
-      if (!zipAsset) throw new Error("No .zip firmware package found in the latest release");
+      if (allReleases.length === 0) throw new Error("No .zip firmware package found in releases");
       
-      latestFwZipUrl = zipAsset.browser_download_url;
-      fwReleaseInfo.innerHTML = `<strong>Latest Release:</strong> <a href="${data.html_url}" target="_blank">${data.tag_name}</a><br><small>${zipAsset.name}</small>`;
-      btnFlashFw.disabled = false;
+      // Select the most recent release by default
+      selectRelease(allReleases[0], true);
+      
+      // Populate dropdown
+      fwReleaseDropdown.innerHTML = allReleases.map((r, idx) => {
+        const zipAsset = r.assets.find(a => a.name.endsWith('.zip'));
+        return `<div class="release-item ${idx === 0 ? 'selected' : ''}" data-idx="${idx}">
+          <strong>${r.tag_name}</strong>${idx === 0 ? '<span class="badge-latest">latest</span>' : ''}<br>
+          <small style="color: var(--muted);">${zipAsset.name}</small>
+        </div>`;
+      }).join('');
+      
+      // Add event listeners to dropdown items
+      const items = fwReleaseDropdown.querySelectorAll('.release-item');
+      items.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          items.forEach(i => i.classList.remove('selected'));
+          item.classList.add('selected');
+          selectRelease(allReleases[item.dataset.idx], parseInt(item.dataset.idx) === 0);
+          fwReleaseDropdown.classList.remove('visible');
+        });
+      });
     } catch (e) {
       fwReleaseInfo.innerHTML = `<span style="color: var(--error)">Error: ${e.message}</span>`;
+      btnFlashFw.disabled = true;
     }
   }
 
-  fwRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        fetchLatestRelease(e.target.value);
-      }
-    });
+  function selectRelease(releaseData, isLatest = false) {
+    const zipAsset = releaseData.assets.find(a => a.name.endsWith('.zip'));
+    if (zipAsset) {
+      latestFwZipUrl = zipAsset.browser_download_url;
+      latestFwZipBuffer = null; // Clear cached buffer
+      fwReleaseInfo.innerHTML = `<div><a href="${releaseData.html_url}" target="_blank" onclick="event.stopPropagation()">${releaseData.tag_name}</a>${isLatest ? '<span class="badge-latest">latest</span>' : ''}<br><small style="color: var(--muted);">${zipAsset.name}</small></div><span style="font-size: 0.8em; margin-left: 8px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;"><polyline points="6 9 12 15 18 9"></polyline></svg></span>`;
+      btnFlashFw.disabled = false;
+    }
+  }
+
+  // Toggle dropdown on info click
+  fwReleaseInfo.addEventListener('click', () => {
+    if (allReleases.length > 0) {
+      fwReleaseDropdown.classList.toggle('visible');
+    }
   });
 
-  const checkedRadio = document.querySelector('input[name="fw-device"]:checked');
-  if (checkedRadio) fetchLatestRelease(checkedRadio.value);
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!fwReleaseInfo.contains(e.target) && !fwReleaseDropdown.contains(e.target)) {
+      fwReleaseDropdown.classList.remove('visible');
+    }
+  });
+
+  if (btnFwGuillemot) {
+    btnFwGuillemot.addEventListener('click', () => {
+      showFwStep(1); // Go to instructions
+      fetchReleases("Guillemot"); // Background fetch releases
+    });
+  }
+
+  if (btnFwUguisu) {
+    btnFwUguisu.addEventListener('click', () => {
+      showFwStep(1); // Go to instructions
+      fetchReleases("Uguisu"); // Background fetch releases
+    });
+  }
 
   function setFwStatus(text, progress = null, isError = false) {
     fwStatus.style.display = "block";

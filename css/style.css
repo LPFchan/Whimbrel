@@ -287,6 +287,13 @@ header a:hover {
 
 .status.success { color: var(--muted); }
 .status.error { color: var(--error); }
+.status .fw-back-to-tiles {
+  color: inherit;
+  text-decoration: underline;
+}
+.status .fw-back-to-tiles:hover {
+  text-decoration: none;
+}
 
 .key-preview-container {
   position: relative;
@@ -657,6 +664,14 @@ header a:hover {
   border-radius: 4px;
   margin: 16px 0 24px 0;
   overflow: hidden;
+  transition: opacity 0.4s ease, height 0.4s ease, margin 0.4s ease;
+}
+
+.progress-container.fade-out {
+  opacity: 0;
+  height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .progress-bar {
@@ -861,6 +876,14 @@ header a:hover {
   border-radius: 4px;
   margin: 16px 0 24px 0;
   overflow: hidden;
+  transition: opacity 0.4s ease, height 0.4s ease, margin 0.4s ease;
+}
+
+.progress-container.fade-out {
+  opacity: 0;
+  height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .progress-bar {

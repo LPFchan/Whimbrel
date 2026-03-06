@@ -164,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentStepIdx = 0; // 0: Gen, 1: Fob, 2: Rx
   let keysProvisioningInProgress = false;
   let keysProvisionAborted = false;
+  let keysProvisioningInPostCircle = false; // true only during the 1.5s blue circle after fob is provisioned
   let keysGenerationInProgress = false;
   let keysGenerationAborted = false;
   let heightAnimTimeout = null;
@@ -667,8 +668,10 @@ document.addEventListener("DOMContentLoaded", () => {
       setStatus("Done. Device provisioned and running.");
       if (deviceId === DEVICE_ID_FOB) {
         fobFlashed = true;
-        await runTimeout(el.timeoutIndicator, el.progressCircle, 1500);
-        showStep(2);
+        keysProvisioningInPostCircle = true;
+        await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
+        keysProvisioningInPostCircle = false;
+        if (!keysProvisionAborted) showStep(2);
       }
       if (deviceId === DEVICE_ID_RX) receiverFlashed = true;
       
@@ -837,8 +840,12 @@ document.addEventListener("DOMContentLoaded", () => {
         fwFlashingInProgress = false;
         resetFwFlashUI();
       } else if (keysProvisioningInProgress) {
-        if (!confirm("Provisioning in progress. Exit anyway?")) return;
-        keysProvisionAborted = true;
+        if (keysProvisioningInPostCircle) {
+          keysProvisionAborted = true;
+        } else {
+          if (!confirm("Provisioning in progress. Exit anyway?")) return;
+          keysProvisionAborted = true;
+        }
       }
 
       tabBtns.forEach(b => b.classList.remove('active'));

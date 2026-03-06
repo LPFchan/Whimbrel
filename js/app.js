@@ -587,4 +587,158 @@ document.addEventListener("DOMContentLoaded", () => {
     setReceiverStatus("Select port…");
     await provisionDevice(DEVICE_ID_RX, setReceiverStatus, BOOTED_RX);
   });
+
+  // ==========================================
+  // TAB SWITCHING & FIRMWARE FLASHER
+  // ==========================================
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => {
+        c.style.display = 'none';
+        c.classList.remove('active');
+      });
+      
+      btn.classList.add('active');
+      const target = document.getElementById(btn.dataset.tab);
+      target.style.display = 'block';
+      target.classList.add('active');
+      
+      // Update history
+      if (btn.dataset.tab === 'tab-keys') {
+        history.replaceState({ step: currentStepIdx }, "", `#step${currentStepIdx + 1}`);
+      } else {
+        history.replaceState({ tab: 'firmware' }, "", `#firmware`);
+      }
+    });
+  });
+
+  const fwRadios = document.querySelectorAll('input[name="fw-device"]');
+  const fwReleaseInfo = document.getElementById("fw-release-info");
+  const btnFlashFw = document.getElementById("btn-flash-fw");
+  const fwStatus = document.getElementById("fw-status");
+  const fwProgressContainer = document.getElementById("fw-progress-container");
+  const fwProgressBar = document.getElementById("fw-progress-bar");
+
+  let latestFwZipUrl = null;
+  let latestFwZipBuffer = null;
+
+  async function fetchLatestRelease(repoName) {
+    try {
+      fwReleaseInfo.innerHTML = `Fetching latest release for ${repoName}...`;
+      btnFlashFw.disabled = true;
+      latestFwZipUrl = null;
+      latestFwZipBuffer = null;
+
+      const res = await fetch(`https://api.github.com/repos/LPFchan/${repoName}/releases/latest`);
+      if (!res.ok) throw new Error("Failed to fetch release info");
+      
+      const data = await res.json();
+      const zipAsset = data.assets.find(a => a.name.endsWith('.zip'));
+      
+      if (!zipAsset) throw new Error("No .zip firmware package found in the latest release");
+      
+      latestFwZipUrl = zipAsset.browser_download_url;
+      fwReleaseInfo.innerHTML = `<strong>Latest Release:</strong> <a href="${data.html_url}" target="_blank">${data.tag_name}</a><br><small>${zipAsset.name}</small>`;
+      btnFlashFw.disabled = false;
+    } catch (e) {
+      fwReleaseInfo.innerHTML = `<span style="color: var(--error)">Error: ${e.message}</span>`;
+    }
+  }
+
+  fwRadios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        fetchLatestRelease(e.target.value);
+      }
+    });
+  });
+
+  const checkedRadio = document.querySelector('input[name="fw-device"]:checked');
+  if (checkedRadio) fetchLatestRelease(checkedRadio.value);
+
+  function setFwStatus(text, progress = null, isError = false) {
+    fwStatus.style.display = "block";
+    fwStatus.textContent = text;
+    fwStatus.className = "status " + (isError ? "error" : "success");
+    
+    if (progress !== null) {
+      fwProgressContainer.style.display = "block";
+      fwProgressBar.style.width = `${Math.min(100, Math.max(0, progress * 100))}%`;
+    } else {
+      fwProgressContainer.style.display = "none";
+    }
+  }
+
+  btnFlashFw.addEventListener('click', async () => {
+    if (!isSupported()) {
+      setFwStatus("Web Serial not supported in this browser.", null, true);
+      return;
+    }
+    if (!latestFwZipUrl) {
+      setFwStatus("No firmware URL available to download.", null, true);
+      return;
+    }
+
+    let port = null;
+    try {
+      port = await requestPort();
+      
+      setFwStatus("Downloading firmware package...", 0);
+      
+      if (!latestFwZipBuffer) {
+        const res = await fetch(latestFwZipUrl);
+        if (!res.ok) throw new Error("Failed to download firmware zip");
+        latestFwZipBuffer = await res.arrayBuffer();
+      }
+
+      setFwStatus("Parsing zip file...", 0.1);
+      const zip = await JSZip.loadAsync(latestFwZipBuffer);
+      
+      const manifestFile = zip.file("manifest.json");
+      if (!manifestFile) throw new Error("manifest.json not found in the zip");
+      
+      const manifestStr = await manifestFile.async("string");
+      const manifest = JSON.parse(manifestStr);
+      
+      const appManifest = manifest.manifest.application;
+      if (!appManifest) throw new Error("Application manifest not found");
+
+      const datFile = zip.file(appManifest.dat_file);
+      const binFile = zip.file(appManifest.bin_file);
+
+      if (!datFile || !binFile) throw new Error("Missing .dat or .bin files specified in manifest");
+
+      const datBytes = await datFile.async("uint8array");
+      const binBytes = await binFile.async("uint8array");
+
+      setFwStatus("Starting DFU process...", 0.2);
+      
+      if (!window.DfuFlasher) throw new Error("DfuFlasher module not loaded");
+      
+      const flasher = new window.DfuFlasher(port, datBytes, binBytes);
+      await flasher.flash((msg, prog) => {
+        setFwStatus(msg, 0.2 + ((prog || 0) * 0.8));
+      });
+      
+      setFwStatus("Firmware flashed successfully! Device will reboot.", 1.0);
+      triggerConfetti();
+      
+    } catch (e) {
+      setFwStatus(`Error: ${e.message}`, null, true);
+      console.error(e);
+      if (port) {
+        try {
+          if (port.readable && port.readable.locked) {
+            await port.readable.cancel().catch(() => {});
+          }
+          await port.close().catch(() => {});
+        } catch (err) {}
+      }
+    }
+  });
+
 });

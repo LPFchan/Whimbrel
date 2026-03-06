@@ -21,6 +21,8 @@
 </head>
 <body>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="js/dfu.js"></script>
   
   <div class="layout-wrapper">
     <header>
@@ -38,8 +40,15 @@
       <p>Web Serial is not available in this browser.<br>Please use Chrome, Edge, or Opera.</p>
     </div>
 
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-keys">Keys</button>
+      <button class="tab-btn" data-tab="tab-firmware">Firmware</button>
+    </div>
+
     <main id="main-panel" class="main-panel">
-      <div id="stepper" class="stepper">
+      <!-- Keys Tab Content -->
+      <div id="tab-keys" class="tab-content active">
+        <div id="stepper" class="stepper">
         <div id="nav-header" class="nav-header step-hidden">
           <button id="btn-back" class="btn-back" type="button" aria-label="Go back">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -87,6 +96,36 @@
         <h2>🎉 All done!</h2>
         <p>Unplug both devices. They are now paired and ready for deployment.</p>
       </section>
+      </div>
+
+      <!-- Firmware Tab Content -->
+      <div id="tab-firmware" class="tab-content step" style="display: none;">
+        <h2>Flash Firmware</h2>
+        <p>Double-tap the reset button on the XIAO to enter Bootloader mode before flashing.</p>
+        
+        <div class="device-selection">
+          <label class="radio-label">
+            <input type="radio" name="fw-device" value="Guillemot" checked>
+            <span>Guillemot Receiver</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="fw-device" value="Uguisu">
+            <span>Uguisu Fob</span>
+          </label>
+        </div>
+
+        <div id="fw-release-info" class="release-info">
+          Fetching latest release...
+        </div>
+
+        <div id="fw-status" class="status" aria-live="polite" style="display: none;"></div>
+        
+        <div id="fw-progress-container" class="progress-container" style="display: none;">
+          <div id="fw-progress-bar" class="progress-bar"></div>
+        </div>
+
+        <button id="btn-flash-fw" type="button" class="btn-huge" disabled>Flash Firmware</button>
+      </div>
     </main>
 
     <footer class="app-footer">

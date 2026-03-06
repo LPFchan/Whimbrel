@@ -31,7 +31,7 @@
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
         Visit the GitHub Page &gt;
       </a>
-      <p class="tagline">Provisioning Tool for <a href="https://github.com/LPFchan/Guillemot" target="_blank">Guillemot</a> and <a href="https://github.com/LPFchan/Uguisu" target="_blank">Uguisu</a></p>
+      <p class="tagline">Companion Web App for <a href="https://github.com/LPFchan/Guillemot" target="_blank">Guillemot</a> and <a href="https://github.com/LPFchan/Uguisu" target="_blank">Uguisu</a></p>
     </header>
 
     <div id="unsupported-msg" class="unsupported-msg" style="display: none;">
@@ -40,14 +40,14 @@
       <p>Web Serial is not available in this browser.<br>Please use Chrome, Edge, or Opera.</p>
     </div>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="tab-keys">Keys</button>
-      <button class="tab-btn" data-tab="tab-firmware">Firmware</button>
+    <div class="tabs" id="main-tabs">
+      <button class="tab-btn active" data-tab="tab-firmware"><span>Firmware</span></button>
+      <button class="tab-btn" data-tab="tab-keys"><span>Keys</span></button>
     </div>
 
     <main id="main-panel" class="main-panel">
       <!-- Keys Tab Content -->
-      <div id="tab-keys" class="tab-content active">
+      <div id="tab-keys" class="tab-content" style="display: none;">
         <div id="stepper" class="stepper">
         <div id="nav-header" class="nav-header step-hidden">
           <button id="btn-back" class="btn-back" type="button" aria-label="Go back">
@@ -99,32 +99,68 @@
       </div>
 
       <!-- Firmware Tab Content -->
-      <div id="tab-firmware" class="tab-content step" style="display: none;">
-        <h2>Flash Firmware</h2>
-        <p>Double-tap the reset button on the XIAO to enter Bootloader mode before flashing.</p>
-        
-        <div class="device-selection">
-          <label class="radio-label">
-            <input type="radio" name="fw-device" value="Guillemot" checked>
-            <span>Guillemot Receiver</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="fw-device" value="Uguisu">
-            <span>Uguisu Fob</span>
-          </label>
-        </div>
+      <div id="tab-firmware" class="tab-content step active">
+        <section id="fw-step-1" class="step step-visible">
+          <div class="device-tiles">
+            <button id="btn-fw-guillemot" type="button" class="btn-tile">Guillemot</button>
+            <button id="btn-fw-uguisu" type="button" class="btn-tile">Uguisu</button>
+          </div>
+        </section>
 
-        <div id="fw-release-info" class="release-info">
-          Fetching latest release...
-        </div>
+        <section id="fw-step-instructions" class="step step-hidden">
+          <div style="position: relative; min-height: 40px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+            <div class="nav-header">
+              <button id="btn-fw-instructions-back" class="btn-back" type="button" aria-label="Go back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back
+              </button>
+            </div>
+            <h2 style="margin: 0; font-size: 1.75rem;">Enter DFU Mode</h2>
+          </div>
+          
+          <div class="instructions-list">
+            <div class="instruction-item">
+              <div class="instruction-number">1</div>
+              <p>Connect the device via USB-C.</p>
+            </div>
+            <div class="instruction-item">
+              <div class="instruction-number">2</div>
+              <p>Double-tap the tiny reset button on the XIAO board rapidly.</p>
+            </div>
+            <div class="instruction-item">
+              <div class="instruction-number">3</div>
+              <p>You should see a new USB drive appear on your computer.</p>
+            </div>
+          </div>
+          <button id="btn-fw-continue" type="button" class="btn-huge">Continue</button>
+        </section>
 
-        <div id="fw-status" class="status" aria-live="polite" style="display: none;"></div>
-        
-        <div id="fw-progress-container" class="progress-container" style="display: none;">
-          <div id="fw-progress-bar" class="progress-bar"></div>
-        </div>
+        <section id="fw-step-2" class="step step-hidden">
+          <div style="position: relative; min-height: 40px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+            <div class="nav-header">
+              <button id="btn-fw-back" class="btn-back" type="button" aria-label="Go back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back
+              </button>
+            </div>
+            <h2 id="fw-device-title" style="margin: 0; font-size: 1.75rem;">Flash Firmware</h2>
+          </div>
+          
+          <div class="release-info-container">
+            <div id="fw-release-info" class="release-info">
+              <span>Fetching releases...</span>
+            </div>
+            <div id="fw-release-dropdown" class="release-dropdown"></div>
+          </div>
 
-        <button id="btn-flash-fw" type="button" class="btn-huge" disabled>Flash Firmware</button>
+          <div id="fw-status" class="status" aria-live="polite" style="display: none;"></div>
+          
+          <div id="fw-progress-container" class="progress-container" style="display: none;">
+            <div id="fw-progress-bar" class="progress-bar"></div>
+          </div>
+
+          <button id="btn-flash-fw" type="button" class="btn-huge" disabled>Flash Firmware</button>
+        </section>
       </div>
     </main>
 

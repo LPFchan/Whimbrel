@@ -1,4 +1,4 @@
-# Whimbrel — Ninebot G30 BLE Immobilizer Provisioning & Flasher App
+# Whimbrel — Ninebot G30 BLE Immobilizer Companion Web App
 
 Whimbrel is the **companion web app** of a three-part immobilizer system ([Uguisu](https://github.com/LPFchan/Uguisu) fob + [Guillemot](https://github.com/LPFchan/Guillemot) receiver + Whimbrel) for the Ninebot Max G30. It serves two primary functions: flashing firmware updates directly from the browser, and handling the cryptographic generation and secure USB injection of a pre-shared AES-128-CCM key to pair the devices.
 

@@ -48,6 +48,24 @@ export async function sendLine(line) {
 }
 
 /**
+ * Read one chunk with timeout. Internal use.
+ * @param {number} timeoutMs
+ * @returns {Promise<{ value: string, done: boolean }>}
+ */
+async function readChunkWithTimeout(timeoutMs) {
+  if (!reader) throw new Error("Serial not open");
+  const timeout = new Promise((_, reject) =>
+    setTimeout(
+      () => reject(new Error(`Timeout (${(timeoutMs / 1000).toFixed(0)}s)`)),
+      timeoutMs
+    )
+  );
+  const read = reader.read();
+  const { value, done } = await Promise.race([read, timeout]);
+  return { value: value ?? "", done };
+}
+
+/**
  * Read until a newline; returns the line without the newline.
  * @returns {Promise<string>}
  */
@@ -61,6 +79,26 @@ export async function readLine() {
       return line;
     }
     const { value, done } = await reader.read();
+    if (done) throw new Error("Serial closed");
+    readBuffer += value;
+  }
+}
+
+/**
+ * Read until a newline or timeout. Throws on timeout.
+ * @param {number} timeoutMs
+ * @returns {Promise<string>}
+ */
+export async function readLineWithTimeout(timeoutMs) {
+  if (!reader) throw new Error("Serial not open");
+  while (true) {
+    const idx = readBuffer.indexOf("\n");
+    if (idx !== -1) {
+      const line = readBuffer.slice(0, idx).trim();
+      readBuffer = readBuffer.slice(idx + 1);
+      return line;
+    }
+    const { value, done } = await readChunkWithTimeout(timeoutMs);
     if (done) throw new Error("Serial closed");
     readBuffer += value;
   }

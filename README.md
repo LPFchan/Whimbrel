@@ -38,14 +38,17 @@ Communication between Whimbrel and the MCUs uses simple JSON or delimited string
 
 ### Payload Specification
 Whimbrel sends a configuration payload:
-`PROV:<DEVICE_ID>:<128_BIT_HEX_KEY>:<RESET_COUNTER>\n`
+`PROV:<DEVICE_ID>:<128_BIT_HEX_KEY>:<RESET_COUNTER>:<CHECKSUM_HEX>\n`
+
+*   **CHECKSUM_HEX** is 4 hex characters: CRC-16-CCITT (poly 0x1021, init 0xFFFF) over the 16 key bytes. Used to detect transmission errors.
 
 Example:
-`PROV:UGUISU_01:4A2B9C8F1E...3D:00000000\n`
+`PROV:UGUISU_01:4A2B9C8F1E...3D:00000000:a3f2\n`
 
 ### Device Responses
 *   `ACK:PROV_SUCCESS\n` – Key saved to non-volatile storage (NVS/FDS).
 *   `ERR:MALFORMED\n` – Payload didn't match expected length/format.
+*   `ERR:CHECKSUM\n` – CRC-16 of received key did not match; retry provisioning.
 
 ---
 

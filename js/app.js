@@ -3,6 +3,8 @@
  * Bundled version (no modules) to support double-click (file://) execution.
  */
 
+const DEMO_MODE = typeof window !== "undefined" && window.WHIMBREL_DEMO === true;
+
 // ==========================================
 // CRYPTO.JS
 // ==========================================
@@ -26,6 +28,7 @@ let readBuffer = "";
 let readerLoopPromise = null;
 
 function isSupported() {
+  if (DEMO_MODE) return true;
   return "serial" in navigator;
 }
 
@@ -524,6 +527,28 @@ document.addEventListener("DOMContentLoaded", () => {
       setStatus("Web Serial not supported.", true);
       return;
     }
+    if (DEMO_MODE) {
+      try {
+        setStatus("Writing key…");
+        await new Promise((r) => setTimeout(r, 600));
+        setStatus("Waiting for device to boot…");
+        await new Promise((r) => setTimeout(r, 900));
+        setStatus("Done. Device provisioned and running.");
+        if (deviceId === DEVICE_ID_FOB) {
+          fobFlashed = true;
+          await runTimeout(el.timeoutIndicator, el.progressCircle, 1500);
+          showStep(2);
+        }
+        if (deviceId === DEVICE_ID_RX) receiverFlashed = true;
+        if (fobFlashed && receiverFlashed && currentStepIdx === 2) {
+          await showStep(3);
+          triggerConfetti();
+        }
+      } catch (e) {
+        setStatus(e.message || "Demo error", true);
+      }
+      return;
+    }
     let port = null;
     try {
       port = await requestPort();
@@ -733,6 +758,15 @@ document.addEventListener("DOMContentLoaded", () => {
       latestFwZipBuffer = null;
       allReleases = [];
 
+      if (DEMO_MODE) {
+        allReleases = [{ tag_name: "v0.1.0", html_url: "#", assets: [{ name: `${repoName}-v0.1.0.zip`, browser_download_url: "#" }] }];
+        selectRelease(allReleases[0], true);
+        fwReleaseDropdown.innerHTML = `<div class="release-item selected" data-idx="0"><strong>v0.1.0</strong><span class="badge-latest">latest</span><br><small style="color: var(--muted);">${repoName}-v0.1.0.zip</small></div>`;
+        fwReleaseInfo.innerHTML = `<div><span>v0.1.0</span><span class="badge-latest">latest</span><br><small style="color: var(--muted);">${repoName}-v0.1.0.zip</small></div><span style="font-size: 0.8em; margin-left: 8px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;"><polyline points="6 9 12 15 18 9"></polyline></svg></span>`;
+        btnFlashFw.disabled = false;
+        return;
+      }
+
       const res = await fetch(`https://api.github.com/repos/LPFchan/${repoName}/releases`);
       if (!res.ok) throw new Error("Failed to fetch releases");
       
@@ -824,6 +858,24 @@ document.addEventListener("DOMContentLoaded", () => {
   btnFlashFw.addEventListener('click', async () => {
     if (!isSupported()) {
       setFwStatus("Web Serial not supported in this browser.", null, true);
+      return;
+    }
+    if (DEMO_MODE) {
+      try {
+        setFwStatus("Downloading firmware package...", 0);
+        await new Promise((r) => setTimeout(r, 400));
+        setFwStatus("Parsing zip file...", 0.1);
+        await new Promise((r) => setTimeout(r, 300));
+        setFwStatus("Starting DFU process...", 0.2);
+        for (let i = 1; i <= 10; i++) {
+          setFwStatus("Writing firmware...", 0.2 + (i / 10) * 0.8);
+          await new Promise((r) => setTimeout(r, 200));
+        }
+        setFwStatus("Firmware flashed successfully! Device will reboot.", 1.0);
+        triggerConfetti();
+      } catch (e) {
+        setFwStatus(`Error: ${e.message}`, null, true);
+      }
       return;
     }
     if (!latestFwZipUrl) {

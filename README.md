@@ -1,8 +1,8 @@
 # Whimbrel — Ninebot G30 BLE Immobilizer Provisioning App
 
-Whimbrel is the **provisioning web app** module of a three-part immobilizer system (Uguisu fob + Guillemot receiver + Whimbrel web app) for the Ninebot Max G30. Whimbrel handles the cryptographic generation of a pre-shared AES-128-CCM key and securely injects it into both hardware devices over USB.
+Whimbrel is the **provisioning web app** module of a three-part immobilizer system ([Uguisu](https://github.com/LPFchan/Uguisu) fob + [Guillemot](https://github.com/LPFchan/Guillemot) receiver + Whimbrel web app) for the Ninebot Max G30. Whimbrel handles the cryptographic generation of a pre-shared AES-128-CCM key and securely injects it into both hardware devices over USB.
 
-This repository contains the **Whimbrel static web app**.
+This repository contains the **Whimbrel static web app**. Note that shared protocol and cryptography logic is implemented in the [ImmoCommon](https://github.com/LPFchan/ImmoCommon) repository.
 
 ## Hardware / Tech Stack
 

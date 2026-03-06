@@ -152,6 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
     secRx: document.getElementById("flash-receiver"),
     timeoutIndicator: document.getElementById("timeout-indicator"),
     progressCircle: document.querySelector("#timeout-indicator .progress-ring-circle"),
+    stepper: document.getElementById("stepper"),
     step1Title: document.getElementById("step-1-title"),
     stepCircles: [
       document.getElementById("step-circle-1"),
@@ -230,6 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (stepIndex === 0) {
+        el.stepper.classList.remove("step-fading-out", "step-hidden");
+        el.stepper.classList.add("step-visible");
         el.secGen.classList.remove("step-hidden");
         el.secGen.classList.add("step-visible");
         el.btnGenerate.style.display = 'block';
@@ -238,16 +241,22 @@ document.addEventListener("DOMContentLoaded", () => {
         el.keyPreviewDots.style.opacity = '0';
         el.keyPreviewDots.style.filter = 'blur(4px)';
       } else if (stepIndex === 1) {
+        el.stepper.classList.remove("step-fading-out", "step-hidden");
+        el.stepper.classList.add("step-visible");
         el.navHeader.classList.remove("step-hidden");
         el.navHeader.classList.add("step-visible");
         el.secFob.classList.remove("step-hidden");
         el.secFob.classList.add("step-visible");
       } else if (stepIndex === 2) {
+        el.stepper.classList.remove("step-fading-out", "step-hidden");
+        el.stepper.classList.add("step-visible");
         el.navHeader.classList.remove("step-hidden");
         el.navHeader.classList.add("step-visible");
         el.secRx.classList.remove("step-hidden");
         el.secRx.classList.add("step-visible");
       } else if (stepIndex === 3) {
+        el.stepper.classList.remove("step-visible", "step-fading-out");
+        el.stepper.classList.add("step-hidden");
         el.notes.classList.remove("step-hidden");
         el.notes.classList.add("step-visible");
       }

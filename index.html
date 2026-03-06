@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Whimbrel — provision Uguisu (key fob) and Guillemot (receiver) for the Ninebot G30 BLE immobilizer.">
+  <title>Whimbrel — Provisioning</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Whimbrel</h1>
+    <p class="tagline">Provision Uguisu & Guillemot</p>
+  </header>
+
+  <main>
+    <section id="generate" class="card">
+      <h2>1. Generate secret</h2>
+      <p>Create a new AES-128 key. Do this once per pair of devices.</p>
+      <button id="btn-generate" type="button">Generate New Secret</button>
+      <div id="key-status" class="status" aria-live="polite"></div>
+      <div id="key-preview" class="key-preview" aria-live="polite"></div>
+    </section>
+
+    <section id="flash-fob" class="card">
+      <h2>2. Flash Key Fob (Uguisu)</h2>
+      <p>Plug the fob in via USB-C, then click below. Select the serial port when prompted.</p>
+      <button id="btn-flash-fob" type="button" disabled>Flash Key Fob</button>
+      <div id="fob-status" class="status" aria-live="polite"></div>
+    </section>
+
+    <section id="flash-receiver" class="card">
+      <h2>3. Flash Receiver (Guillemot)</h2>
+      <p>Plug the receiver in via USB-C, then click below. Use the same key as above.</p>
+      <button id="btn-flash-receiver" type="button" disabled>Flash Receiver</button>
+      <div id="receiver-status" class="status" aria-live="polite"></div>
+    </section>
+
+    <section id="notes" class="card notes">
+      <h2>Done</h2>
+      <p>Unplug both devices. They are now paired and ready for deployment.</p>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

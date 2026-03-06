@@ -1,0 +1,10 @@
+{
+  "name": "Whimbrel",
+  "short_name": "Whimbrel",
+  "description": "Provision Uguisu (key fob) and Guillemot (receiver) for the Ninebot G30 BLE immobilizer.",
+  "start_url": "/Whimbrel/index.html",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#58a6ff",
+  "icons": []
+}

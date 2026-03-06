@@ -23,6 +23,8 @@ const TIMEOUT_BOOT_MS = 10000;
 
 /** @type {string | null} */
 let currentKey = null;
+let fobFlashed = false;
+let receiverFlashed = false;
 
 const el = {
   btnGenerate: document.getElementById("btn-generate"),
@@ -32,6 +34,7 @@ const el = {
   keyPreview: document.getElementById("key-preview"),
   fobStatus: document.getElementById("fob-status"),
   receiverStatus: document.getElementById("receiver-status"),
+  notes: document.getElementById("notes"),
 };
 
 function setKey(key) {
@@ -132,6 +135,11 @@ async function provisionDevice(deviceId, setStatus, expectedBooted) {
     await waitForBooted(expectedBooted);
 
     setStatus("Done. Device provisioned and running.");
+    if (deviceId === DEVICE_ID_FOB) fobFlashed = true;
+    if (deviceId === DEVICE_ID_RX) receiverFlashed = true;
+    if (fobFlashed && receiverFlashed) {
+      el.notes.style.display = "block";
+    }
   } catch (e) {
     const msg = e.message || "Serial error";
     if (msg.includes("Timeout"))
@@ -147,6 +155,13 @@ el.btnGenerate.addEventListener("click", () => {
   clearKeyStatus();
   const key = generateKey();
   setKey(key);
+  fobFlashed = false;
+  receiverFlashed = false;
+  el.notes.style.display = "none";
+  el.fobStatus.textContent = "";
+  el.fobStatus.className = "status";
+  el.receiverStatus.textContent = "";
+  el.receiverStatus.className = "status";
 });
 
 el.btnFlashFob.addEventListener("click", async () => {

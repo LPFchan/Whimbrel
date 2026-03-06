@@ -344,27 +344,31 @@ header a:hover {
   margin-bottom: 0; 
 }
 
-.theme-toggle {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 50%;
-  width: 52px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: all 0.2s ease;
-  z-index: 1000;
+.app-footer {
+  width: 100%;
+  text-align: center;
+  margin-top: 32px;
+  padding: 16px 0;
 }
 
-.theme-toggle:hover {
-  transform: scale(1.05);
+.theme-toggle-footer {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 8px 16px;
+}
+
+.theme-toggle-footer:hover {
+  color: var(--text);
 }
 
 .step-hidden {

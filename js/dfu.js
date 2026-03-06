@@ -258,7 +258,6 @@ class DfuFlasher {
       
       let offset = 0;
       const totalSize = this.binBytes.length;
-      let cumulativeCrc = 0xFFFFFFFF; // CRC init
       
       while (offset < totalSize) {
         const chunkSize = Math.min(maxSize, totalSize - offset);
@@ -269,14 +268,12 @@ class DfuFlasher {
         await this.writeObject(chunk);
         
         const chk = await this.calcChecksum();
-        
-        // Update cumulative CRC expectation
-        cumulativeCrc = crc32(chunk, cumulativeCrc ^ 0xFFFFFFFF);
+        const expectedChunkCrc = crc32(chunk);
         
         if (chk.offset !== offset + chunkSize) {
           throw new Error(`Data offset mismatch. Expected ${offset + chunkSize}, got ${chk.offset}`);
         }
-        if (chk.crc !== cumulativeCrc) {
+        if (chk.crc !== expectedChunkCrc) {
           throw new Error(`Data CRC mismatch at offset ${offset}.`);
         }
         

@@ -165,6 +165,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let currentStepIdx = 0; // 0: Gen, 1: Fob, 2: Rx
+  let keysProvisioningInProgress = false;
+  let keysProvisionAborted = false;
+  let keysGenerationInProgress = false;
+  let keysGenerationAborted = false;
   let heightAnimTimeout = null;
 
   function animateHeightChange(callback) {
@@ -214,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const visibleEls = [el.secGen, el.secFob, el.secRx, el.navHeader, el.notes].filter(e => e.classList.contains('step-visible'));
     visibleEls.forEach(e => e.classList.add('step-fading-out'));
     
-    await new Promise(r => setTimeout(r, 200));
+    await abortableDelay(200);
 
     animateHeightChange(() => {
       currentStepIdx = stepIndex;
@@ -320,6 +324,16 @@ document.addEventListener("DOMContentLoaded", () => {
           showStep(e.state.step, false);
         }
       } else if (e.state.tab === 'firmware') {
+        if (fwCurrentStepIdx === 2 && fwFlashingInProgress && typeof e.state.fwStep === 'number' && e.state.fwStep < 2) {
+          history.pushState({ tab: 'firmware', fwStep: 2 }, "", "#firmware-step3");
+          if (confirm("Firmware is still flashing. Exit anyway?")) {
+            fwFlashAborted = true;
+            fwFlashingInProgress = false;
+            resetFwFlashUI();
+            history.back();
+          }
+          return;
+        }
         switchTabUI('tab-firmware');
         if (typeof e.state.fwStep === 'number') {
           showFwStep(e.state.fwStep, false);
@@ -331,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set initial history state
   history.replaceState({ tab: 'firmware', fwStep: 0 }, "", "#firmware-step1");
 
-  async function runTimeout(containerEl, circleEl, ms) {
+  async function runTimeout(containerEl, circleEl, ms, shouldAbort) {
     containerEl.classList.add("visible");
     circleEl.style.transition = 'none';
     circleEl.style.strokeDashoffset = '50.26';
@@ -344,9 +358,20 @@ document.addEventListener("DOMContentLoaded", () => {
     circleEl.style.transition = `stroke-dashoffset ${ms}ms linear`;
     circleEl.style.strokeDashoffset = '0';
     
-    await new Promise(r => setTimeout(r, ms));
+    if (typeof shouldAbort === 'function') {
+      const start = Date.now();
+      while (Date.now() - start < ms) {
+        await abortableDelay(50, shouldAbort);
+        if (shouldAbort()) {
+          containerEl.classList.remove("visible");
+          return;
+        }
+      }
+    } else {
+      await abortableDelay(ms);
+    }
     containerEl.classList.remove("visible");
-    await new Promise(r => setTimeout(r, 300));
+    await abortableDelay(300);
   }
 
   if (!isSupported()) {
@@ -391,52 +416,107 @@ document.addEventListener("DOMContentLoaded", () => {
     el.btnFlashReceiver.disabled = !key;
   }
 
+  /**
+   * Resolves after ms, or immediately if shouldAbort() returns true (checked every 50ms).
+   * @param {number} ms - Delay in milliseconds
+   * @param {() => boolean} [shouldAbort] - Optional; when true, resolve immediately
+   */
+  function abortableDelay(ms, shouldAbort) {
+    if (typeof shouldAbort !== 'function') {
+      return new Promise(r => setTimeout(r, ms));
+    }
+    return new Promise((resolve) => {
+      const start = Date.now();
+      const check = () => {
+        if (shouldAbort() || Date.now() - start >= ms) {
+          resolve();
+          return;
+        }
+        setTimeout(check, 50);
+      };
+      setTimeout(check, 50);
+    });
+  }
+
+  function cancelKeyGenerationUI() {
+    el.secGen.classList.add("step-fading-out");
+    setTimeout(() => {
+      el.secGen.classList.remove("step-fading-out", "step-visible");
+      el.secGen.offsetHeight;
+      el.secGen.classList.add("step-visible");
+      el.btnGenerate.disabled = false;
+      el.btnGenerate.style.display = "block";
+      el.step1Title.textContent = "Generate New Key";
+      el.keyPreviewContainer.style.display = "none";
+      el.keyPreviewDots.style.opacity = "0";
+      el.keyPreviewDots.style.filter = "blur(4px)";
+      el.timeoutIndicator.classList.remove("visible");
+    }, 200);
+  }
+
   async function animateKeyGeneration(finalKey) {
     // #region agent log
     fetch('http://127.0.0.1:7748/ingest/7c248faa-9499-4eab-94c9-76fab9a34041',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b4a7bc'},body:JSON.stringify({sessionId:'b4a7bc',runId:'run1',hypothesisId:'H5',location:'app.js:animateKeyGeneration',message:'Key generation styling',data:{},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
-    el.btnGenerate.disabled = true;
-    animateHeightChange(() => {
-      el.btnGenerate.style.display = 'none';
-      el.step1Title.textContent = "Creating a new AES-128 key ...";
-      el.keyPreviewContainer.style.display = 'block';
-      el.keyPreviewDots.style.display = 'block';
-    });
-    
-    el.keyPreview.classList.add("scrambling");
-    el.keyPreview.classList.remove("revealed");
-    el.keyPreview.style.opacity = "1";
-    el.keyPreview.style.filter = "blur(0px)";
-    
-    const hexChars = "0123456789abcdef";
-    for (let len = 1; len <= 32; len++) {
-      let scrambled = "";
-      for (let j = 0; j < len; j++) {
-        scrambled += hexChars[Math.floor(Math.random() * hexChars.length)];
+    keysGenerationInProgress = true;
+    keysGenerationAborted = false;
+    try {
+      el.secGen.classList.add('step-fading-out');
+      await abortableDelay(200, () => keysGenerationAborted);
+      if (keysGenerationAborted) { cancelKeyGenerationUI(); return; }
+      el.btnGenerate.disabled = true;
+      animateHeightChange(() => {
+        el.secGen.classList.remove('step-fading-out', 'step-visible');
+        el.secGen.offsetHeight;
+        el.secGen.classList.add('step-visible');
+        el.btnGenerate.style.display = 'none';
+        el.step1Title.textContent = "Creating a new AES-128 key ...";
+        el.keyPreviewContainer.style.display = 'block';
+        el.keyPreviewDots.style.display = 'block';
+      });
+      
+      el.keyPreview.classList.add("scrambling");
+      el.keyPreview.classList.remove("revealed");
+      el.keyPreview.style.opacity = "1";
+      el.keyPreview.style.filter = "blur(0px)";
+      
+      const hexChars = "0123456789abcdef";
+      for (let len = 1; len <= 32; len++) {
+        if (keysGenerationAborted) { cancelKeyGenerationUI(); return; }
+        let scrambled = "";
+        for (let j = 0; j < len; j++) {
+          scrambled += hexChars[Math.floor(Math.random() * hexChars.length)];
+        }
+        el.keyPreview.textContent = scrambled;
+        await abortableDelay(30, () => keysGenerationAborted);
       }
-      el.keyPreview.textContent = scrambled;
-      await new Promise(r => setTimeout(r, 30));
+      
+      if (keysGenerationAborted) { cancelKeyGenerationUI(); return; }
+      // Freeze state for 1 second
+      el.keyPreview.classList.remove("scrambling");
+      await abortableDelay(1000, () => keysGenerationAborted);
+      
+      if (keysGenerationAborted) { cancelKeyGenerationUI(); return; }
+      // Blur and fade out scrambled string, while fading in dots
+      el.keyPreview.style.opacity = "0";
+      el.keyPreview.style.filter = "blur(4px)";
+      
+      setKey(finalKey);
+      el.keyPreviewDots.style.opacity = "1";
+      el.keyPreviewDots.style.filter = "blur(0px)";
+      
+      await abortableDelay(400, () => keysGenerationAborted);
+      
+      if (keysGenerationAborted) { cancelKeyGenerationUI(); return; }
+      el.btnGenerate.disabled = false;
+      
+      // Waiting circle takes 1.5 seconds (abortable)
+      await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysGenerationAborted);
+      if (keysGenerationAborted) { cancelKeyGenerationUI(); return; }
+      showStep(1);
+    } finally {
+      keysGenerationInProgress = false;
     }
-    
-    // Freeze state for 1 second
-    el.keyPreview.classList.remove("scrambling");
-    await new Promise(r => setTimeout(r, 1000));
-    
-    // Blur and fade out scrambled string, while fading in dots
-    el.keyPreview.style.opacity = "0";
-    el.keyPreview.style.filter = "blur(4px)";
-    
-    setKey(finalKey);
-    el.keyPreviewDots.style.opacity = "1";
-    el.keyPreviewDots.style.filter = "blur(0px)";
-    
-    await new Promise(r => setTimeout(r, 400));
-    
-    el.btnGenerate.disabled = false;
-    
-    // Waiting circle takes 1.5 seconds
-    await runTimeout(el.timeoutIndicator, el.progressCircle, 1500);
-    showStep(1);
   }
 
   function clearKeyStatus() {
@@ -444,6 +524,40 @@ document.addEventListener("DOMContentLoaded", () => {
       el.keyStatus.textContent = "";
       el.keyStatus.className = "status";
     });
+  }
+
+  function resetKeysUI() {
+    keysGenerationAborted = true;
+    currentKey = null;
+    fobFlashed = false;
+    receiverFlashed = false;
+    el.keyStatus.textContent = "";
+    el.keyStatus.className = "status";
+    const fobDesc = document.getElementById("fob-desc");
+    const receiverDesc = document.getElementById("receiver-desc");
+    if (fobDesc) fobDesc.style.display = "block";
+    if (receiverDesc) receiverDesc.style.display = "block";
+    el.fobStatus.textContent = "";
+    el.fobStatus.className = "status";
+    el.fobStatus.style.display = "none";
+    el.receiverStatus.textContent = "";
+    el.receiverStatus.className = "status";
+    el.receiverStatus.style.display = "none";
+    el.notes.classList.remove("step-visible");
+    el.notes.classList.add("step-hidden");
+    if (!keysGenerationInProgress) {
+      el.secGen.classList.remove("step-fading-out");
+      el.secGen.classList.add("step-visible");
+      el.keyPreviewContainer.style.display = "none";
+      el.keyPreviewDots.style.opacity = "0";
+      el.keyPreviewDots.style.filter = "blur(4px)";
+      el.step1Title.textContent = "Generate New Key";
+      el.btnGenerate.style.display = "block";
+      el.btnGenerate.disabled = false;
+      el.timeoutIndicator.classList.remove("visible");
+    }
+    showStep(0, false);
+    replaceHistory(0);
   }
 
   function setFobStatus(text, isError = false) {
@@ -527,16 +641,20 @@ document.addEventListener("DOMContentLoaded", () => {
       setStatus("Web Serial not supported.", true);
       return;
     }
+    keysProvisioningInProgress = true;
+    keysProvisionAborted = false;
     if (DEMO_MODE) {
       try {
         setStatus("Writing key…");
-        await new Promise((r) => setTimeout(r, 600));
+        await abortableDelay(600, () => keysProvisionAborted);
+        if (keysProvisionAborted) { setStatus(""); return; }
         setStatus("Waiting for device to boot…");
-        await new Promise((r) => setTimeout(r, 900));
+        await abortableDelay(900, () => keysProvisionAborted);
+        if (keysProvisionAborted) { setStatus(""); return; }
         setStatus("Done. Device provisioned and running.");
         if (deviceId === DEVICE_ID_FOB) {
           fobFlashed = true;
-          await runTimeout(el.timeoutIndicator, el.progressCircle, 1500);
+          await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
           showStep(2);
         }
         if (deviceId === DEVICE_ID_RX) receiverFlashed = true;
@@ -545,19 +663,23 @@ document.addEventListener("DOMContentLoaded", () => {
           triggerConfetti();
         }
       } catch (e) {
-        setStatus(e.message || "Demo error", true);
+        if (!keysProvisionAborted) setStatus(e.message || "Demo error", true);
+      } finally {
+        keysProvisioningInProgress = false;
       }
       return;
     }
     let port = null;
     try {
       port = await requestPort();
+      if (keysProvisionAborted) return;
       await openPort(port);
 
       setStatus("Writing key…");
       const line = buildProvLine(deviceId);
       await sendLine(line);
       const response = await readLineWithTimeout(TIMEOUT_PROV_MS);
+      if (keysProvisionAborted) { setStatus(""); return; }
       if (response !== "ACK:PROV_SUCCESS") {
         if (response.startsWith("ERR:")) {
           setStatus(`Step 1 (write & verify) failed: ${response}`, true);
@@ -569,6 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setStatus("Waiting for device to boot…");
       await waitForBooted(expectedBooted);
+      if (keysProvisionAborted) { setStatus(""); return; }
 
       setStatus("Done. Device provisioned and running.");
       if (deviceId === DEVICE_ID_FOB) {
@@ -583,17 +706,23 @@ document.addEventListener("DOMContentLoaded", () => {
         triggerConfetti();
       }
     } catch (e) {
-      const msg = e.message || "Serial error";
-      if (msg.includes("Timeout"))
-        setStatus(`Step failed (timeout): ${msg}`, true);
-      else
-        setStatus(msg, true);
+      if (!keysProvisionAborted) {
+        const msg = e.message || "Serial error";
+        if (msg.includes("Timeout"))
+          setStatus(`Step failed (timeout): ${msg}`, true);
+        else
+          setStatus(msg, true);
+      } else {
+        setStatus("");
+      }
     } finally {
+      keysProvisioningInProgress = false;
       if (port) await closePort(port);
     }
   }
 
   el.btnGenerate.addEventListener("click", async () => {
+    keysGenerationAborted = false;
     clearKeyStatus();
     
     let key;
@@ -649,6 +778,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const tabContents = document.querySelectorAll('.tab-content');
 
   let fwCurrentStepIdx = 0; // 0: Select Device, 1: Instructions, 2: Flash Firmware
+  let fwSelectedDeviceName = "Guillemot"; // "Guillemot" | "Uguisu" for step 3 title
+  let fwFlashingInProgress = false;
+  let fwFlashAborted = false;
   const fwStep1 = document.getElementById("fw-step-1");
   const fwStepInstructions = document.getElementById("fw-step-instructions");
   const fwStep2 = document.getElementById("fw-step-2");
@@ -664,7 +796,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const visibleEls = [fwStep1, fwStepInstructions, fwStep2].filter(e => e && e.classList.contains('step-visible'));
     visibleEls.forEach(e => e.classList.add('step-fading-out'));
     
-    setTimeout(() => {
+    (async () => {
+      await abortableDelay(200);
       animateHeightChange(() => {
         fwCurrentStepIdx = stepIndex;
         
@@ -684,9 +817,11 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (stepIndex === 2 && fwStep2) {
           fwStep2.classList.remove("step-hidden");
           fwStep2.classList.add("step-visible");
+          if (fwDeviceTitle) fwDeviceTitle.textContent = `Flashing ${fwSelectedDeviceName}`;
+          resetFwFlashUI();
         }
       });
-    }, 200);
+    })();
   }
 
   const btnFwInstructionsBack = document.getElementById("btn-fw-instructions-back");
@@ -702,6 +837,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnFwBack) {
     btnFwBack.addEventListener("click", () => {
       if (fwCurrentStepIdx > 0) {
+        if (fwCurrentStepIdx === 2 && fwFlashingInProgress) {
+          if (confirm("Firmware is still flashing. Exit anyway?")) {
+            fwFlashAborted = true;
+            fwFlashingInProgress = false;
+            resetFwFlashUI();
+            history.back();
+          }
+          return;
+        }
         history.back();
       }
     });
@@ -716,6 +860,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+      if (fwFlashingInProgress) {
+        if (!confirm("Firmware is still flashing. Exit anyway?")) return;
+        fwFlashAborted = true;
+        fwFlashingInProgress = false;
+        resetFwFlashUI();
+      } else if (keysProvisioningInProgress) {
+        if (!confirm("Provisioning in progress. Exit anyway?")) return;
+        keysProvisionAborted = true;
+      }
+
       tabBtns.forEach(b => b.classList.remove('active'));
       tabContents.forEach(c => {
         c.style.display = 'none';
@@ -727,6 +881,13 @@ document.addEventListener("DOMContentLoaded", () => {
       target.style.display = 'block';
       target.classList.add('active');
       
+      if (btn.dataset.tab === 'tab-keys' && btn.classList.contains('active')) {
+        resetKeysUI();
+      }
+      if (btn.dataset.tab === 'tab-firmware' && btn.classList.contains('active')) {
+        resetFwFlashUI();
+        showFwStep(0, false);
+      }
       // Update history
       if (btn.dataset.tab === 'tab-keys') {
         try { history.replaceState({ tab: 'keys', step: currentStepIdx }, "", `#step${currentStepIdx + 1}`); } catch (e) {}
@@ -828,8 +989,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  fwStep2.addEventListener('click', (e) => {
+    if (e.target.closest('.fw-back-to-tiles')) {
+      e.preventDefault();
+      showFwStep(0);
+    }
+  });
+
   if (btnFwGuillemot) {
     btnFwGuillemot.addEventListener('click', () => {
+      fwSelectedDeviceName = "Guillemot";
       showFwStep(1); // Go to instructions
       fetchReleases("Guillemot"); // Background fetch releases
     });
@@ -837,22 +1006,89 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (btnFwUguisu) {
     btnFwUguisu.addEventListener('click', () => {
+      fwSelectedDeviceName = "Uguisu";
       showFwStep(1); // Go to instructions
       fetchReleases("Uguisu"); // Background fetch releases
     });
   }
 
-  function setFwStatus(text, progress = null, isError = false) {
+  let fwProgressFadeTimeout = null;
+
+  function setFwStatus(text, progress = null, isError = false, asHtml = false) {
     fwStatus.style.display = "block";
-    fwStatus.textContent = text;
+    if (asHtml) fwStatus.innerHTML = text; else fwStatus.textContent = text;
     fwStatus.className = "status " + (isError ? "error" : "success");
     
     if (progress !== null) {
+      if (fwProgressFadeTimeout) {
+        clearTimeout(fwProgressFadeTimeout);
+        fwProgressFadeTimeout = null;
+      }
+      fwProgressContainer.classList.remove("fade-out");
       fwProgressContainer.style.display = "block";
       fwProgressBar.style.width = `${Math.min(100, Math.max(0, progress * 100))}%`;
+      btnFlashFw.style.display = "none";
+      if (progress >= 1) {
+        fwProgressFadeTimeout = setTimeout(() => {
+          fwProgressFadeTimeout = null;
+          fwProgressContainer.classList.add("fade-out");
+          setTimeout(() => {
+            fwProgressContainer.style.display = "none";
+            fwProgressContainer.classList.remove("fade-out");
+          }, 400);
+        }, 500);
+      }
     } else {
+      if (fwProgressFadeTimeout) {
+        clearTimeout(fwProgressFadeTimeout);
+        fwProgressFadeTimeout = null;
+      }
+      fwProgressContainer.classList.remove("fade-out");
       fwProgressContainer.style.display = "none";
+      btnFlashFw.style.display = "";
     }
+  }
+
+  function setFwStatusSuccessWithLink() {
+    if (fwProgressFadeTimeout) {
+      clearTimeout(fwProgressFadeTimeout);
+      fwProgressFadeTimeout = null;
+    }
+    const otherDevice = fwSelectedDeviceName === "Guillemot" ? "Uguisu" : "Guillemot";
+    const linkText = "Flash " + otherDevice;
+    fwStatus.style.display = "block";
+    fwStatus.innerHTML = "Firmware flashed successfully! <a href=\"#\" class=\"fw-back-to-tiles\">" + linkText + "</a>";
+    fwStatus.className = "status success";
+    fwProgressContainer.classList.remove("fade-out");
+    fwProgressContainer.style.display = "block";
+    fwProgressBar.style.width = "100%";
+    btnFlashFw.style.display = "none";
+    fwProgressFadeTimeout = setTimeout(() => {
+      fwProgressFadeTimeout = null;
+      fwProgressContainer.classList.add("fade-out");
+      setTimeout(() => {
+        fwProgressContainer.style.display = "none";
+        fwProgressContainer.classList.remove("fade-out");
+      }, 400);
+    }, 500);
+  }
+
+  function resetFwFlashUI() {
+    if (fwProgressFadeTimeout) {
+      clearTimeout(fwProgressFadeTimeout);
+      fwProgressFadeTimeout = null;
+    }
+    if (fwStatus) {
+      fwStatus.style.display = "none";
+      fwStatus.textContent = "";
+      fwStatus.className = "status";
+    }
+    if (fwProgressContainer) {
+      fwProgressContainer.style.display = "none";
+      fwProgressContainer.classList.remove("fade-out");
+    }
+    if (fwProgressBar) fwProgressBar.style.width = "0%";
+    if (btnFlashFw) btnFlashFw.style.display = "";
   }
 
   btnFlashFw.addEventListener('click', async () => {
@@ -860,32 +1096,42 @@ document.addEventListener("DOMContentLoaded", () => {
       setFwStatus("Web Serial not supported in this browser.", null, true);
       return;
     }
+    fwFlashingInProgress = true;
+    fwFlashAborted = false;
     if (DEMO_MODE) {
       try {
         setFwStatus("Downloading firmware package...", 0);
-        await new Promise((r) => setTimeout(r, 400));
+        await abortableDelay(400, () => fwFlashAborted);
+        if (fwFlashAborted) return;
         setFwStatus("Parsing zip file...", 0.1);
-        await new Promise((r) => setTimeout(r, 300));
+        await abortableDelay(300, () => fwFlashAborted);
+        if (fwFlashAborted) return;
         setFwStatus("Starting DFU process...", 0.2);
         for (let i = 1; i <= 10; i++) {
+          if (fwFlashAborted) return;
           setFwStatus("Writing firmware...", 0.2 + (i / 10) * 0.8);
-          await new Promise((r) => setTimeout(r, 200));
+          await abortableDelay(200, () => fwFlashAborted);
         }
-        setFwStatus("Firmware flashed successfully! Device will reboot.", 1.0);
+        if (fwFlashAborted) return;
+        setFwStatusSuccessWithLink();
         triggerConfetti();
       } catch (e) {
-        setFwStatus(`Error: ${e.message}`, null, true);
+        if (!fwFlashAborted) setFwStatus(`Error: ${e.message}`, null, true);
+      } finally {
+        fwFlashingInProgress = false;
       }
       return;
     }
     if (!latestFwZipUrl) {
       setFwStatus("No firmware URL available to download.", null, true);
+      fwFlashingInProgress = false;
       return;
     }
 
     let port = null;
     try {
       port = await requestPort();
+      if (fwFlashAborted) return;
       
       setFwStatus("Downloading firmware package...", 0);
       
@@ -924,11 +1170,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setFwStatus(msg, 0.2 + ((prog || 0) * 0.8));
       });
       
-      setFwStatus("Firmware flashed successfully! Device will reboot.", 1.0);
+      setFwStatusSuccessWithLink();
       triggerConfetti();
       
     } catch (e) {
-      setFwStatus(`Error: ${e.message}`, null, true);
+      if (!fwFlashAborted) setFwStatus(`Error: ${e.message}`, null, true);
       console.error(e);
       if (port) {
         try {
@@ -938,6 +1184,8 @@ document.addEventListener("DOMContentLoaded", () => {
           await port.close().catch(() => {});
         } catch (err) {}
       }
+    } finally {
+      fwFlashingInProgress = false;
     }
   });
 

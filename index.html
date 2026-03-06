@@ -7,42 +7,135 @@
   <title>Whimbrel — Provisioning</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem("theme");
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
-  <header>
-    <h1>Whimbrel</h1>
-    <p class="tagline">Provision Uguisu & Guillemot</p>
-  </header>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+  
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  </button>
 
-  <main>
-    <section id="generate" class="card">
-      <h2>1. Generate secret</h2>
-      <p>Create a new AES-128 key. Do this once per pair of devices.</p>
-      <button id="btn-generate" type="button">Generate New Secret</button>
-      <div id="key-status" class="status" aria-live="polite"></div>
-      <div id="key-preview" class="key-preview" aria-live="polite"></div>
-    </section>
+  <div class="layout-wrapper">
+    <header>
+      <h1 id="home-link" style="cursor: pointer;">Whimbrel</h1>
+      <a href="https://github.com/LPFchan/Whimbrel" class="github-link" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        Visit the GitHub Page &gt;
+      </a>
+      <p class="tagline">Provisioning Tool for <a href="https://github.com/LPFchan/Guillemot" target="_blank">Guillemot</a> and <a href="https://github.com/LPFchan/Uguisu" target="_blank">Uguisu</a></p>
+    </header>
 
-    <section id="flash-fob" class="card">
-      <h2>2. Flash Key Fob (Uguisu)</h2>
-      <p>Plug the fob in via USB-C, then click below. Select the serial port when prompted.</p>
-      <button id="btn-flash-fob" type="button" disabled>Flash Key Fob</button>
-      <div id="fob-status" class="status" aria-live="polite"></div>
-    </section>
+    <div id="unsupported-msg" class="unsupported-msg" style="display: none;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="unsupported-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <h2>Browser Not Supported</h2>
+      <p>Web Serial is not available in this browser.<br>Please use Chrome, Edge, or Opera.</p>
+    </div>
 
-    <section id="flash-receiver" class="card">
-      <h2>3. Flash Receiver (Guillemot)</h2>
-      <p>Plug the receiver in via USB-C, then click below. Use the same key as above.</p>
-      <button id="btn-flash-receiver" type="button" disabled>Flash Receiver</button>
-      <div id="receiver-status" class="status" aria-live="polite"></div>
-    </section>
+    <main id="main-panel" class="main-panel">
+      <div id="stepper" class="stepper">
+        <div id="nav-header" class="nav-header step-hidden">
+          <button id="btn-back" class="btn-back" type="button" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back
+          </button>
+        </div>
+        <div class="step-circle active" id="step-circle-1">1</div>
+        <div class="step-line"></div>
+        <div class="step-circle" id="step-circle-2">2</div>
+        <div class="step-line"></div>
+        <div class="step-circle" id="step-circle-3">3</div>
+        <div id="timeout-indicator" class="timeout-indicator">
+          <svg class="progress-ring" width="20" height="20">
+            <circle class="progress-ring-bg" cx="10" cy="10" r="8"></circle>
+            <circle class="progress-ring-circle" cx="10" cy="10" r="8"></circle>
+          </svg>
+        </div>
+      </div>
 
-    <section id="notes" class="card notes" style="display: none;">
-      <h2>Done</h2>
-      <p>Unplug both devices. They are now paired and ready for deployment.</p>
-    </section>
-  </main>
+      <section id="generate" class="step step-visible">
+        <h2 id="step-1-title">Generate New Key</h2>
+        <button id="btn-generate" type="button" class="btn-huge">Generate</button>
+        <div id="key-status" class="status" aria-live="polite"></div>
+        <div class="key-preview-container" id="key-preview-container" style="display: none;">
+          <div id="key-preview" class="key-preview" aria-live="polite"></div>
+          <div id="key-preview-dots" class="key-preview" aria-live="polite" style="opacity: 0; filter: blur(4px); -webkit-text-security: disc;">00000000000000000000000000000000</div>
+        </div>
+      </section>
 
-  <script type="module" src="js/app.js"></script>
+      <section id="flash-fob" class="step step-hidden">
+        <h2>Flash Key Fob</h2>
+        <p id="fob-desc">Plug the fob in via USB-C<br>Select the serial port when prompted.</p>
+        <div id="fob-status" class="status" aria-live="polite" style="display: none;"></div>
+        <button id="btn-flash-fob" type="button" class="btn-huge">Flash</button>
+      </section>
+
+      <section id="flash-receiver" class="step step-hidden">
+        <h2>Flash Receiver</h2>
+        <p id="receiver-desc">Plug the receiver in via USB-C<br>Select the serial port when prompted.</p>
+        <div id="receiver-status" class="status" aria-live="polite" style="display: none;"></div>
+        <button id="btn-flash-receiver" type="button" class="btn-huge">Flash</button>
+      </section>
+
+      <section id="notes" class="step notes step-hidden">
+        <h2>🎉 All done!</h2>
+        <p>Unplug both devices. They are now paired and ready for deployment.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const toggle = document.getElementById("theme-toggle");
+      const moon = document.getElementById("moon-icon");
+      const sun = document.getElementById("sun-icon");
+      
+      function updateIcons() {
+        if (document.documentElement.getAttribute("data-theme") === "dark") {
+          moon.style.display = "none";
+          sun.style.display = "block";
+        } else {
+          moon.style.display = "block";
+          sun.style.display = "none";
+        }
+      }
+      
+      updateIcons();
+      
+      toggle.addEventListener("click", () => {
+        if (document.documentElement.getAttribute("data-theme") === "dark") {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.setItem("theme", "light");
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("theme", "dark");
+        }
+        updateIcons();
+      });
+
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+        if (!localStorage.getItem("theme")) {
+          if (e.matches) {
+            document.documentElement.setAttribute("data-theme", "dark");
+          } else {
+            document.documentElement.removeAttribute("data-theme");
+          }
+          updateIcons();
+        }
+      });
+    });
+  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>

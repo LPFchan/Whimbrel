@@ -3,6 +3,7 @@
  */
 
 const BAUDRATE = 115200;
+let portRef = null;
 let reader = null;
 let writer = null;
 let readBuffer = "";
@@ -28,10 +29,15 @@ export async function requestPort() {
  * @param {SerialPort} port
  */
 export async function open(port) {
+  portRef = port;
   await port.open({ baudRate: BAUDRATE });
+  
+  // Set up writer
   const encoder = new TextEncoderStream();
   encoder.readable.pipeTo(port.writable);
   writer = encoder.writable.getWriter();
+  
+  // Set up reader
   const decoder = new TextDecoderStream();
   port.readable.pipeTo(decoder.writable);
   reader = decoder.readable.getReader();
@@ -48,49 +54,16 @@ export async function sendLine(line) {
 }
 
 /**
- * Read one chunk with timeout. Internal use.
- * @param {number} timeoutMs
- * @returns {Promise<{ value: string, done: boolean }>}
- */
-async function readChunkWithTimeout(timeoutMs) {
-  if (!reader) throw new Error("Serial not open");
-  const timeout = new Promise((_, reject) =>
-    setTimeout(
-      () => reject(new Error(`Timeout (${(timeoutMs / 1000).toFixed(0)}s)`)),
-      timeoutMs
-    )
-  );
-  const read = reader.read();
-  const { value, done } = await Promise.race([read, timeout]);
-  return { value: value ?? "", done };
-}
-
-/**
- * Read until a newline; returns the line without the newline.
- * @returns {Promise<string>}
- */
-export async function readLine() {
-  if (!reader) throw new Error("Serial not open");
-  while (true) {
-    const idx = readBuffer.indexOf("\n");
-    if (idx !== -1) {
-      const line = readBuffer.slice(0, idx).trim();
-      readBuffer = readBuffer.slice(idx + 1);
-      return line;
-    }
-    const { value, done } = await reader.read();
-    if (done) throw new Error("Serial closed");
-    readBuffer += value;
-  }
-}
-
-/**
  * Read until a newline or timeout. Throws on timeout.
+ * This implementation avoids leaving dangling read Promises.
  * @param {number} timeoutMs
  * @returns {Promise<string>}
  */
 export async function readLineWithTimeout(timeoutMs) {
   if (!reader) throw new Error("Serial not open");
+  
+  const startTime = Date.now();
+  
   while (true) {
     const idx = readBuffer.indexOf("\n");
     if (idx !== -1) {
@@ -98,10 +71,57 @@ export async function readLineWithTimeout(timeoutMs) {
       readBuffer = readBuffer.slice(idx + 1);
       return line;
     }
-    const { value, done } = await readChunkWithTimeout(timeoutMs);
-    if (done) throw new Error("Serial closed");
-    readBuffer += value;
+    
+    // Calculate remaining time
+    const remainingMs = timeoutMs - (Date.now() - startTime);
+    if (remainingMs <= 0) {
+      // Time is up, we must cancel the reader to avoid dangling promises
+      await reader.cancel();
+      reader.releaseLock();
+      
+      // Re-establish the reader so future reads can work if needed
+      const decoder = new TextDecoderStream();
+      portRef.readable.pipeTo(decoder.writable);
+      reader = decoder.readable.getReader();
+      
+      throw new Error(`Timeout (${(timeoutMs / 1000).toFixed(0)}s)`);
+    }
+
+    // Set a race between the actual read and a timeout rejection
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Timeout internal")), remainingMs);
+    });
+    
+    try {
+      const { value, done } = await Promise.race([reader.read(), timeoutPromise]);
+      if (done) throw new Error("Serial closed");
+      readBuffer += value ?? "";
+    } catch (e) {
+      if (e.message === "Timeout internal") {
+        // We hit the timeout. We must cancel the underlying reader so it doesn't stay blocked.
+        await reader.cancel();
+        reader.releaseLock();
+        
+        // Re-establish the reader stream
+        const decoder = new TextDecoderStream();
+        portRef.readable.pipeTo(decoder.writable);
+        reader = decoder.readable.getReader();
+        
+        throw new Error(`Timeout (${(timeoutMs / 1000).toFixed(0)}s)`);
+      }
+      throw e;
+    }
   }
+}
+
+/**
+ * Read until a newline (no timeout).
+ * @returns {Promise<string>}
+ */
+export async function readLine() {
+  // Just use a very long timeout (e.g. 1 hour) instead of a separate loop
+  // to share logic and avoid dangling reads on manual disconnect.
+  return readLineWithTimeout(3600000);
 }
 
 /**
@@ -111,14 +131,19 @@ export async function readLineWithTimeout(timeoutMs) {
 export async function close(port) {
   try {
     if (reader) {
-      await reader.cancel();
+      await reader.cancel().catch(() => {});
+      reader.releaseLock();
       reader = null;
     }
     if (writer) {
-      await writer.close();
+      await writer.close().catch(() => {});
+      writer.releaseLock();
       writer = null;
     }
   } finally {
-    if (port) await port.close();
+    if (port) {
+      await port.close().catch(() => {});
+    }
+    portRef = null;
   }
 }

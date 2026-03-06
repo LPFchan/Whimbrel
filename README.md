@@ -18,9 +18,9 @@ Whimbrel uses the Web Serial API because it requires physical USB-C access, elim
 ### Serial Payload
 
 Whimbrel sends a delimited string to the MCU at 115200 baud:
-`PROV:<DEVICE_ID>:<128_BIT_HEX_KEY>:<RESET_COUNTER>:<CHECKSUM_HEX>\n`
+`PROV:<128_BIT_HEX_KEY>:<8_HEX_COUNTER>:<CHECKSUM_HEX>\n`
 
-Example: `PROV:UGUISU_01:4A2B9C8F...:00000000:a3f2\n`
+Example: `PROV:4a2b9c8f...32chars...:00000000:a3f2\n`
 
 - **CHECKSUM_HEX** is a 4-hex-character CRC-16-CCITT to detect transmission errors.
 - **Device Responses**: `ACK:PROV_SUCCESS\n`, `ERR:MALFORMED\n`, or `ERR:CHECKSUM\n`.

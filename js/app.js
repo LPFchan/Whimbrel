@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await openPort(port);
 
       setStatus("Writing key…");
-      const line = buildProvLine(deviceId, currentKey);
+      const line = buildProvLine(currentKey);
       await sendLine(line);
       const response = await readLineWithTimeout(TIMEOUT_PROV_MS);
       if (keysProvisionAborted) {

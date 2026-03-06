@@ -27,8 +27,8 @@ function crc16Key(keyHex) {
   return (crc & 0xffff).toString(16).padStart(4, "0").toLowerCase();
 }
 
-function buildProvLine(deviceId, keyHex) {
+function buildProvLine(keyHex) {
   if (!keyHex || keyHex.length !== 32) throw new Error("Invalid key");
   const checksum = crc16Key(keyHex);
-  return `PROV:${deviceId}:${keyHex}:${RESET_COUNTER}:${checksum}`;
+  return `PROV:${keyHex}:${RESET_COUNTER}:${checksum}`;
 }

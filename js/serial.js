@@ -7,6 +7,7 @@ let portRef = null;
 let reader = null;
 let writer = null;
 let readBuffer = "";
+let readerLoopPromise = null;
 
 /**
  * Check if Web Serial is available (Chrome/Edge).
@@ -42,6 +43,19 @@ export async function open(port) {
   port.readable.pipeTo(decoder.writable);
   reader = decoder.readable.getReader();
   readBuffer = "";
+
+  // Start background read loop
+  readerLoopPromise = (async () => {
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) readBuffer += value;
+      }
+    } catch (e) {
+      // Stream closed or error
+    }
+  })();
 }
 
 /**
@@ -55,7 +69,7 @@ export async function sendLine(line) {
 
 /**
  * Read until a newline or timeout. Throws on timeout.
- * This implementation avoids leaving dangling read Promises.
+ * Uses a background buffer loop instead of racing the reader directly.
  * @param {number} timeoutMs
  * @returns {Promise<string>}
  */
@@ -75,42 +89,11 @@ export async function readLineWithTimeout(timeoutMs) {
     // Calculate remaining time
     const remainingMs = timeoutMs - (Date.now() - startTime);
     if (remainingMs <= 0) {
-      // Time is up, we must cancel the reader to avoid dangling promises
-      await reader.cancel();
-      reader.releaseLock();
-      
-      // Re-establish the reader so future reads can work if needed
-      const decoder = new TextDecoderStream();
-      portRef.readable.pipeTo(decoder.writable);
-      reader = decoder.readable.getReader();
-      
       throw new Error(`Timeout (${(timeoutMs / 1000).toFixed(0)}s)`);
     }
 
-    // Set a race between the actual read and a timeout rejection
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Timeout internal")), remainingMs);
-    });
-    
-    try {
-      const { value, done } = await Promise.race([reader.read(), timeoutPromise]);
-      if (done) throw new Error("Serial closed");
-      readBuffer += value ?? "";
-    } catch (e) {
-      if (e.message === "Timeout internal") {
-        // We hit the timeout. We must cancel the underlying reader so it doesn't stay blocked.
-        await reader.cancel();
-        reader.releaseLock();
-        
-        // Re-establish the reader stream
-        const decoder = new TextDecoderStream();
-        portRef.readable.pipeTo(decoder.writable);
-        reader = decoder.readable.getReader();
-        
-        throw new Error(`Timeout (${(timeoutMs / 1000).toFixed(0)}s)`);
-      }
-      throw e;
-    }
+    // Wait a short time before checking the buffer again
+    await new Promise(r => setTimeout(r, Math.min(50, remainingMs)));
   }
 }
 
@@ -139,6 +122,10 @@ export async function close(port) {
       await writer.close().catch(() => {});
       writer.releaseLock();
       writer = null;
+    }
+    if (readerLoopPromise) {
+      await readerLoopPromise;
+      readerLoopPromise = null;
     }
   } finally {
     if (port) {

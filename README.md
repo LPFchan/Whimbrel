@@ -23,7 +23,7 @@ Whimbrel sends a delimited string to the MCU at 115200 baud:
 Example: `PROV:4a2b9c8f...32chars...:00000000:a3f2\n`
 
 - **CHECKSUM_HEX** is a 4-hex-character CRC-16-CCITT to detect transmission errors.
-- **Device Responses**: `ACK:PROV_SUCCESS\n`, `ERR:MALFORMED\n`, or `ERR:CHECKSUM\n`.
+- **Device Responses**: `ACK:PROV_SUCCESS\n`, `ERR:MALFORMED\n`, `ERR:CHECKSUM\n`, or `ERR:STORAGE\n` (storage write/verify failure).
 
 ### Ephemeral Memory
 

@@ -19,6 +19,9 @@ async function requestPort() {
 }
 
 async function openPort(port) {
+  if (portRef !== null) {
+    throw new Error("Serial port already in use");
+  }
   portRef = port;
   await port.open({ baudRate: BAUDRATE });
 

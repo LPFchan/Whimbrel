@@ -22,7 +22,7 @@ function crc16Key(keyHex) {
   for (let i = 0; i < 16; i++) {
     crc ^= bytes[i] << 8;
     for (let k = 0; k < 8; k++)
-      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
+      crc = ((crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1)) & 0xffff;
   }
   return (crc & 0xffff).toString(16).padStart(4, "0").toLowerCase();
 }

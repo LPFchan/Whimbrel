@@ -13,7 +13,7 @@ This repository contains the **Whimbrel static web app**. Note that shared proto
 
 ## Provisioning Protocol
 
-Whimbrel uses the Web Serial API because it requires physical USB-C access, eliminating the risk of over-the-air pairing interception. The nRF52840's VBUS detection wakes the MCU from strict sleep to handle the serial configuration.
+Whimbrel uses the Web Serial API because it requires physical USB-C access, eliminating the risk of over-the-air pairing interception and conserving the fob's battery. Firmware exposes no serial commands to read the key back (write-only). Requires Chrome or Edge.
 
 ### Serial Payload
 

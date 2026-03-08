@@ -534,221 +534,11 @@ header a:hover {
 .btn-tile {
   flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 8px;
-  font-size: 1.5rem;
-  font-family: inherit;
-  font-weight: 700;
-  color: var(--text);
-  background-color: #e5e7eb;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-[data-theme="dark"] .btn-tile {
-  background-color: #2a2a2a;
-}
-
-.btn-tile:hover:not(:disabled) {
-  background-color: var(--border);
-}
-
-[data-theme="dark"] .btn-tile:hover:not(:disabled) {
-  background-color: #333333;
-}
-
-.btn-tile:active:not(:disabled) {
-  transform: scale(0.96);
-  transition: transform 0.05s ease;
-}
-
-.btn-tile:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.badge-latest {
-  background: var(--success);
-  color: var(--surface);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.75em;
-  margin-left: 8px;
-  font-weight: bold;
-  text-transform: lowercase;
-  vertical-align: middle;
-}
-
-.release-info-container {
-  position: relative;
-  margin-bottom: 24px;
-}
-
-.release-info {
-  background: var(--bg);
-  padding: 16px;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  color: var(--text);
-  border: 1px solid var(--border);
-  text-align: left;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.release-info:hover {
-  border-color: var(--accent);
-}
-
-.release-info a {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.release-info a:hover {
-  text-decoration: underline;
-}
-
-.release-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  margin-top: 8px;
-  z-index: 10;
-  max-height: 200px;
-  overflow-y: auto;
-  display: none;
-}
-
-.release-dropdown.visible {
-  display: block;
-}
-
-.release-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  transition: background-color 0.2s;
-  text-align: left;
-}
-
-.release-item:last-child {
-  border-bottom: none;
-}
-
-.release-item:hover {
-  background-color: var(--bg);
-}
-
-.release-item.selected {
-  background-color: var(--bg);
-  font-weight: bold;
-}
-
-.progress-container {
-  width: 100%;
-  height: 8px;
-  background: var(--border);
-  border-radius: 4px;
-  margin: 16px 0 24px 0;
-  overflow: hidden;
-  transition: opacity 0.4s ease, height 0.4s ease, margin 0.4s ease;
-}
-
-.progress-container.fade-out {
-  opacity: 0;
-  height: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.progress-bar {
-  height: 100%;
-  width: 0%;
-  background: var(--accent);
-  transition: width 0.1s linear;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  width: 100%;
-  background: transparent;
-  padding: 0;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 12px 16px;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  opacity: 0.5;
-  transition: opacity 0.2s ease;
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
-.tab-btn span {
-  position: relative;
-}
-
-.tab-btn:hover {
-  opacity: 0.8;
-  color: var(--text);
-  background: transparent;
-}
-
-.tab-btn.active {
-  opacity: 1;
-  color: var(--text);
-  background: transparent;
-}
-
-.tab-btn.active span::after {
-  content: '';
-  position: absolute;
-  bottom: -13px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--text-header);
-}
-
-/* Firmware Tab Styles */
-.device-tiles {
-  display: flex;
   gap: 16px;
-  margin-bottom: 0;
-  min-height: 250px;
-  align-items: stretch;
-}
-
-.btn-tile {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 8px;
+  padding: 24px 16px;
   font-size: 1.5rem;
   font-family: inherit;
   font-weight: 700;
@@ -758,6 +548,12 @@ header a:hover {
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.device-icon {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
 }
 
 [data-theme="dark"] .btn-tile {
@@ -892,3 +688,4 @@ header a:hover {
   background: var(--accent);
   transition: width 0.1s linear;
 }
+

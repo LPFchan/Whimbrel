@@ -1,9 +1,13 @@
 /**
- * Whimbrel firmware tab: release fetching, DFU flashing.
- * Call initFirmwareTab(opts) from main app with { abortableDelay, animateHeightChange, triggerConfetti }.
+ * Whimbrel firmware tab: UI Controller for release fetching and DFU flashing.
  */
 
-function initFirmwareTab(opts) {
+import { fetchDeviceReleases } from "./api.js";
+import { fetchAndParseFirmwareZip } from "./firmware-manager.js";
+import { DfuFlasher } from "./dfu.js";
+import { requestPort, isSupported } from "./serial.js";
+
+export function initFirmwareTab(opts) {
   const { abortableDelay, animateHeightChange, triggerConfetti } = opts;
 
   let fwCurrentStepIdx = 0;
@@ -186,14 +190,7 @@ function initFirmwareTab(opts) {
       latestFwZipBuffer = null;
       allReleases = [];
 
-      const res = await fetch(`https://api.github.com/repos/LPFchan/${repoName}/releases`);
-      if (!res.ok) throw new Error("Failed to fetch releases");
-
-      const data = await res.json();
-      allReleases = data.filter((r) => r.assets && r.assets.some((a) => a.name.endsWith(".zip")));
-
-      if (allReleases.length === 0) throw new Error("No .zip firmware package found in releases");
-
+      allReleases = await fetchDeviceReleases(repoName);
       selectRelease(allReleases[0], true);
 
       if (fwReleaseDropdown) {
@@ -311,40 +308,13 @@ function initFirmwareTab(opts) {
         port = await requestPort();
         if (fwFlashAborted) return;
 
-        setFwStatus("Downloading firmware package...", 0);
-
-        if (!latestFwZipBuffer) {
-          const res = await fetch(latestFwZipUrl);
-          if (!res.ok) throw new Error("Failed to download firmware zip");
-          latestFwZipBuffer = await res.arrayBuffer();
-        }
-
-        setFwStatus("Parsing zip file...", 0.1);
-        const zip = await JSZip.loadAsync(latestFwZipBuffer);
-
-        const manifestFile = zip.file("manifest.json");
-        if (!manifestFile) throw new Error("manifest.json not found in the zip");
-
-        const manifestStr = await manifestFile.async("string");
-        const manifest = JSON.parse(manifestStr);
-
-        const appManifest = manifest.manifest.application;
-        if (!appManifest) throw new Error("Application manifest not found");
-
-        const datFile = zip.file(appManifest.dat_file);
-        const binFile = zip.file(appManifest.bin_file);
-
-        if (!datFile || !binFile)
-          throw new Error("Missing .dat or .bin files specified in manifest");
-
-        const datBytes = await datFile.async("uint8array");
-        const binBytes = await binFile.async("uint8array");
+        setFwStatus("Downloading & parsing firmware...", 0.1);
+        const { datBytes, binBytes, buffer } = await fetchAndParseFirmwareZip(latestFwZipUrl, latestFwZipBuffer);
+        latestFwZipBuffer = buffer;
 
         setFwStatus("Starting DFU process...", 0.2);
 
-        if (!window.DfuFlasher) throw new Error("DfuFlasher module not loaded");
-
-        const flasher = new window.DfuFlasher(port, datBytes, binBytes);
+        const flasher = new DfuFlasher(port, datBytes, binBytes);
         await flasher.flash((msg, prog) => {
           setFwStatus(msg, 0.2 + ((prog || 0) * 0.8));
         });

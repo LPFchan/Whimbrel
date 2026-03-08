@@ -3,6 +3,8 @@
  * Handles SLIP encoding/decoding, CRC32, and the Nordic DFU state machine.
  */
 
+import { CONFIG } from "./config.js";
+
 const OP_PROTOCOL_VERSION = 0x00;
 const OP_CREATE_OBJECT = 0x01;
 const OP_SET_PRN = 0x02;
@@ -38,7 +40,8 @@ function crc32(data, crc = 0xFFFFFFFF) {
 
 class SlipFramer {
   constructor() {
-    this.buffer = [];
+    this.buffer = new Uint8Array(4096);
+    this.length = 0;
     this.escape = false;
   }
   
@@ -47,43 +50,47 @@ class SlipFramer {
     for (let i = 0; i < chunk.length; i++) {
       const b = chunk[i];
       if (b === 0xC0) {
-        if (this.buffer.length > 0) {
-          packets.push(new Uint8Array(this.buffer));
-          this.buffer = [];
+        if (this.length > 0) {
+          packets.push(new Uint8Array(this.buffer.subarray(0, this.length)));
+          this.length = 0;
         }
         this.escape = false;
       } else if (b === 0xDB) {
         this.escape = true;
       } else if (this.escape) {
-        if (b === 0xDC) this.buffer.push(0xC0);
-        else if (b === 0xDD) this.buffer.push(0xDB);
-        else this.buffer.push(b); // Should not happen
+        if (b === 0xDC) this.buffer[this.length++] = 0xC0;
+        else if (b === 0xDD) this.buffer[this.length++] = 0xDB;
+        else this.buffer[this.length++] = b; // Should not happen
         this.escape = false;
       } else {
-        this.buffer.push(b);
+        this.buffer[this.length++] = b;
       }
     }
     return packets;
   }
   
   static encode(packet) {
-    const out = [0xC0]; // Optional start byte
+    const out = new Uint8Array(packet.length * 2 + 2);
+    out[0] = 0xC0;
+    let len = 1;
     for (let i = 0; i < packet.length; i++) {
       const b = packet[i];
       if (b === 0xC0) {
-        out.push(0xDB, 0xDC);
+        out[len++] = 0xDB;
+        out[len++] = 0xDC;
       } else if (b === 0xDB) {
-        out.push(0xDB, 0xDD);
+        out[len++] = 0xDB;
+        out[len++] = 0xDD;
       } else {
-        out.push(b);
+        out[len++] = b;
       }
     }
-    out.push(0xC0); // End byte
-    return new Uint8Array(out);
+    out[len++] = 0xC0;
+    return out.subarray(0, len);
   }
 }
 
-class DfuFlasher {
+export class DfuFlasher {
   constructor(port, datBytes, binBytes) {
     this.port = port;
     this.datBytes = datBytes;
@@ -93,7 +100,8 @@ class DfuFlasher {
     this.writer = null;
     this.readLoopPromise = null;
     this.responseQueue = [];
-    this.mtu = 256; // Default safe MTU
+    this.responseResolvers = [];
+    this.mtu = CONFIG.DFU_DEFAULT_MTU;
   }
 
   async startReader() {
@@ -114,16 +122,32 @@ class DfuFlasher {
         while (true) {
           const { value, done } = await this.reader.read();
           if (done) break;
-          if (value) {
-            if (value[0] === OP_RESPONSE) {
+          if (value && value[0] === OP_RESPONSE) {
+            const opcode = value[1];
+            const idx = this.responseResolvers.findIndex(r => r.reqOpcode === opcode);
+            if (idx !== -1) {
+              const r = this.responseResolvers[idx];
+              this.responseResolvers.splice(idx, 1);
+              clearTimeout(r.timer);
+              r.resolve(value);
+            } else {
               this.responseQueue.push(value);
             }
           }
         }
       } catch (e) {
         // Stream closed
+        this._rejectAllResolvers(e);
       }
     })();
+  }
+  
+  _rejectAllResolvers(error) {
+    while (this.responseResolvers.length > 0) {
+      const r = this.responseResolvers.shift();
+      clearTimeout(r.timer);
+      r.reject(error);
+    }
   }
 
   async send(data) {
@@ -137,23 +161,26 @@ class DfuFlasher {
   }
 
   async receiveResponse(reqOpcode, timeoutMs = 5000) {
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
-      if (this.responseQueue.length > 0) {
-        for (let i = 0; i < this.responseQueue.length; i++) {
-          const pkt = this.responseQueue[i];
-          if (pkt[1] === reqOpcode) {
-            this.responseQueue.splice(i, 1);
-            if (pkt[2] !== RES_SUCCESS) {
-              throw new Error(`DFU Error: Opcode ${reqOpcode} failed with code ${pkt[2]}`);
-            }
-            return pkt;
-          }
-        }
-      }
-      await new Promise(r => setTimeout(r, 10));
+    const idx = this.responseQueue.findIndex(pkt => pkt[1] === reqOpcode);
+    let pkt;
+    if (idx !== -1) {
+      pkt = this.responseQueue[idx];
+      this.responseQueue.splice(idx, 1);
+    } else {
+      pkt = await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          const i = this.responseResolvers.findIndex(r => r.resolve === resolve);
+          if (i !== -1) this.responseResolvers.splice(i, 1);
+          reject(new Error(`DFU timeout waiting for response to opcode ${reqOpcode}`));
+        }, timeoutMs);
+        this.responseResolvers.push({ reqOpcode, resolve, reject, timer });
+      });
     }
-    throw new Error(`DFU timeout waiting for response to opcode ${reqOpcode}`);
+
+    if (pkt[2] !== RES_SUCCESS) {
+      throw new Error(`DFU Error: Opcode ${reqOpcode} failed with code ${pkt[2]}`);
+    }
+    return pkt;
   }
 
   async sendCommandAndRead(reqOpcode, payload = []) {
@@ -179,8 +206,8 @@ class DfuFlasher {
       const view = new DataView(res.buffer, res.byteOffset, res.byteLength);
       this.mtu = view.getUint16(3, true);
     } catch (e) {
-      console.warn("MTU get failed, using default 256");
-      this.mtu = 256;
+      console.warn("MTU get failed, using default " + CONFIG.DFU_DEFAULT_MTU);
+      this.mtu = CONFIG.DFU_DEFAULT_MTU;
     }
   }
 
@@ -212,17 +239,29 @@ class DfuFlasher {
   }
 
   async writeObject(dataChunk) {
-    const maxChunk = (this.mtu || 256) / 2 - 2; // slip overhead safety
+    const maxChunk = (this.mtu || CONFIG.DFU_DEFAULT_MTU) / 2 - 2; // slip overhead safety
+    const req = new Uint8Array(maxChunk + 1);
+    req[0] = OP_WRITE_OBJECT;
+    
     for (let i = 0; i < dataChunk.length; i += maxChunk) {
-      const slice = dataChunk.slice(i, i + maxChunk);
-      const req = new Uint8Array([OP_WRITE_OBJECT, ...slice]);
-      await this.send(req);
+      const sliceSize = Math.min(maxChunk, dataChunk.length - i);
+      const slice = dataChunk.subarray(i, i + sliceSize);
+      
+      if (sliceSize === maxChunk) {
+        req.set(slice, 1);
+        await this.send(req);
+      } else {
+        const lastReq = new Uint8Array(sliceSize + 1);
+        lastReq[0] = OP_WRITE_OBJECT;
+        lastReq.set(slice, 1);
+        await this.send(lastReq);
+      }
     }
   }
 
   async flash(onProgress) {
     onProgress("Opening port...");
-    await this.port.open({ baudRate: 115200, bufferSize: 8192 });
+    await this.port.open({ baudRate: CONFIG.BAUDRATE, bufferSize: CONFIG.DFU_BUFFER_SIZE });
     
     await this.startReader();
     
@@ -261,7 +300,7 @@ class DfuFlasher {
       
       while (offset < totalSize) {
         const chunkSize = Math.min(maxSize, totalSize - offset);
-        const chunk = this.binBytes.slice(offset, offset + chunkSize);
+        const chunk = this.binBytes.subarray(offset, offset + chunkSize);
         
         onProgress(`Writing object at offset ${offset}...`, offset / totalSize);
         await this.createObject(OBJ_DATA, chunkSize);
@@ -286,6 +325,7 @@ class DfuFlasher {
       onProgress("Firmware update complete!", 1.0);
       
     } finally {
+      this._rejectAllResolvers(new Error("DFU flash finished or aborted"));
       if (this.reader) {
         await this.reader.cancel().catch(() => {});
         this.reader.releaseLock();
@@ -297,5 +337,3 @@ class DfuFlasher {
     }
   }
 }
-
-window.DfuFlasher = DfuFlasher;

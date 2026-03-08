@@ -1,8 +1,12 @@
 /**
  * Whimbrel app: main UI orchestration, key generation, and provisioning flows.
- * Depends on: crypto.js, serial.js, prov.js, firmware.js (load order matters).
- * No ES modules - supports file:// execution.
  */
+
+import { CONFIG } from "./config.js";
+import { generateKey, buildProvLine } from "./crypto.js";
+import { isSupported, requestPort, SerialConnection } from "./serial.js";
+import { waitForBooted } from "./prov.js";
+import { initFirmwareTab } from "./firmware.js";
 
 let currentKey = null;
 let fobFlashed = false;
@@ -124,16 +128,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  const fwTab =
-    typeof initFirmwareTab === "function"
-      ? initFirmwareTab({ abortableDelay, animateHeightChange, triggerConfetti })
-      : null;
-  const showFwStep = fwTab ? fwTab.showFwStep : () => {};
-  const resetFwFlashUI = fwTab ? fwTab.resetFwFlashUI : () => {};
-  const handleFirmwarePopState = fwTab ? fwTab.handleFirmwarePopState : () => false;
-  const abortFwFlash = fwTab ? fwTab.abortFwFlash : () => {};
-  const isFwFlashing = fwTab ? fwTab.isFwFlashing : () => false;
-  const getFwStepIdx = fwTab ? fwTab.getFwStepIdx : () => 0;
+  const fwTab = initFirmwareTab({ abortableDelay, animateHeightChange, triggerConfetti });
+  const showFwStep = fwTab.showFwStep;
+  const resetFwFlashUI = fwTab.resetFwFlashUI;
+  const handleFirmwarePopState = fwTab.handleFirmwarePopState;
+  const abortFwFlash = fwTab.abortFwFlash;
+  const isFwFlashing = fwTab.isFwFlashing;
+  const getFwStepIdx = fwTab.getFwStepIdx;
 
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -332,16 +333,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     keysProvisioningInProgress = true;
     keysProvisionAborted = false;
-    let port = null;
+    let serialConn = null;
     try {
-      port = await requestPort();
+      const port = await requestPort();
       if (keysProvisionAborted) return;
-      await openPort(port);
+      
+      serialConn = new SerialConnection();
+      await serialConn.open(port);
 
       setStatus("Writing key…");
       const line = buildProvLine(currentKey);
-      await sendLine(line);
-      const response = await readLineWithTimeout(TIMEOUT_PROV_MS);
+      await serialConn.sendLine(line);
+      const response = await serialConn.readLineWithTimeout(CONFIG.TIMEOUT_PROV_MS);
       if (keysProvisionAborted) {
         setStatus("");
         return;
@@ -356,21 +359,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       setStatus("Waiting for device to boot…");
-      await waitForBooted(expectedBooted);
+      await waitForBooted(serialConn, expectedBooted);
       if (keysProvisionAborted) {
         setStatus("");
         return;
       }
 
       setStatus("Done. Device provisioned and running.");
-      if (deviceId === DEVICE_ID_FOB) {
+      if (deviceId === CONFIG.DEVICE_ID_FOB) {
         fobFlashed = true;
         keysProvisioningInPostCircle = true;
         await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
         keysProvisioningInPostCircle = false;
         if (!keysProvisionAborted) showStep(2);
       }
-      if (deviceId === DEVICE_ID_RX) receiverFlashed = true;
+      if (deviceId === CONFIG.DEVICE_ID_RX) receiverFlashed = true;
 
       if (fobFlashed && receiverFlashed && currentStepIdx === 2) {
         await showStep(3);
@@ -386,7 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } finally {
       keysProvisioningInProgress = false;
-      if (port) await closePort(port);
+      if (serialConn) await serialConn.close();
     }
   }
 
@@ -561,12 +564,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   el.btnFlashFob.addEventListener("click", async () => {
     setFobStatus("Select port…");
-    await provisionDevice(DEVICE_ID_FOB, setFobStatus, BOOTED_FOB);
+    await provisionDevice(CONFIG.DEVICE_ID_FOB, setFobStatus, CONFIG.BOOTED_FOB);
   });
 
   el.btnFlashReceiver.addEventListener("click", async () => {
     setReceiverStatus("Select port…");
-    await provisionDevice(DEVICE_ID_RX, setReceiverStatus, BOOTED_RX);
+    await provisionDevice(CONFIG.DEVICE_ID_RX, setReceiverStatus, CONFIG.BOOTED_RX);
   });
 
   tabBtns.forEach((btn) => {

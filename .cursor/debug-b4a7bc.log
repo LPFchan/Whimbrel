@@ -1,0 +1,152 @@
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772824532638}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772824533718}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772824536119}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772824540565}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772824542563}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772824573949}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772824576352}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772824598164}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772824600564}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772824665246}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772824667000}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772824704897}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772824705431}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772824707281}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772824709693}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772824824862}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772824827262}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772824878163}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772824880565}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772825183024}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825184527}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825186946}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825191059}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772825193130}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825195841}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825198246}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825248491}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772825250953}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825253876}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825256286}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825262974}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772825264770}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825314374}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825316780}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825323341}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825325756}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772825393716}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825394440}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825396842}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825401254}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772825402436}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825405189}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825407594}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825413340}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825415745}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825422906}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772825424003}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772825566580}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825567255}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825569661}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825572770}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772825572772}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772825573573}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772825574776}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772825576281}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825576283}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772825771282}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825772004}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825774415}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825777752}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772825777755}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772825778558}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772825779762}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772825781266}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825781268}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772825953119}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772825953750}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772825956165}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772825958984}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772825959745}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826018686}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772826019385}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826021790}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772826024716}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772826024718}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772826025521}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772826026725}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772826028229}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826028231}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826083200}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772826084099}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826086702}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772826090264}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772826090265}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772826091067}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772826092271}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772826093775}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826093776}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772826116833}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826119238}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772826140217}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772826140219}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772826141021}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772826142225}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772826143730}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826143732}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772826155030}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826157434}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772826161831}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772826161833}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772826162636}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772826164057}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772826166058}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772826166060}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826339576}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826340309}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826340979}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826345684}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772826347366}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772826349810}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772826353946}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772826353950}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772826354814}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772826356021}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772826357529}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772826357533}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826377086}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772826434728}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772826437208}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772826441062}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772826441065}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772826441867}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772826443074}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772826444582}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772826444585}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772826467365}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772826469842}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772826525778}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772826525780}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772826526585}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772826527792}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772826529296}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772826529300}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772826561179}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772827140699}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772827143160}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772827181838}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":558,"panelWidth":640},"timestamp":1772827187273}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772827203862}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26"},"timestamp":1772827206273}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772827211743}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Failed to execute 'requestPort' on 'Serial': No port selected by the user."},"timestamp":1772827213165}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772827268080}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772827270529}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Select port…"},"timestamp":1772827273730}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Connecting to device..."},"timestamp":1772827273732}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Writing key…"},"timestamp":1772827274535}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Waiting for device to boot…"},"timestamp":1772827275742}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H2_fix","location":"app.js:setFobStatus","message":"Kept flash btn","data":{"text":"Done. Device provisioned and running."},"timestamp":1772827277245}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772827277248}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772827303895}
+{"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772827306358}

@@ -75,6 +75,9 @@
             fwStep2.classList.add("step-visible");
             if (fwDeviceTitle) fwDeviceTitle.textContent = `Flashing ${fwSelectedDeviceName}`;
             resetFwFlashUI();
+            if (!latestFwZipUrl && !latestFwZipBuffer && fwReleaseDropdown) {
+              setTimeout(() => fwReleaseDropdown.classList.add("visible"), 50);
+            }
           }
         });
       })();
@@ -259,6 +262,9 @@
       const inputEl = document.getElementById("fw-custom-repo-input");
       const fetchBtn = document.getElementById("fw-custom-repo-fetch");
 
+      const form = fwReleaseDropdown.querySelector(".custom-repo-form");
+      if (form) form.addEventListener("click", (e) => e.stopPropagation());
+
       setTimeout(() => { if (inputEl) inputEl.focus(); }, 0);
 
       if (backBtn) {
@@ -309,6 +315,7 @@
         if (fwReleaseInfo) fwReleaseInfo.innerHTML = `<span style="color: var(--error)">Error: ${e.message}</span>`;
         if (btnFlashFw) btnFlashFw.disabled = true;
         buildReleaseDropdown();
+        if (fwReleaseDropdown) fwReleaseDropdown.classList.add("visible");
       }
     }
 
@@ -343,6 +350,14 @@
         if (fwReleaseDropdown) {
           fwReleaseDropdown.classList.toggle("visible");
         }
+      });
+    }
+
+    // Close dropdown when clicking its background (the area covering the selector button).
+    // Item clicks all call stopPropagation so they won't trigger this.
+    if (fwReleaseDropdown) {
+      fwReleaseDropdown.addEventListener("click", () => {
+        fwReleaseDropdown.classList.remove("visible");
       });
     }
 

@@ -3,15 +3,16 @@
  */
 
 (function() {
-  const { 
-    CONFIG, 
-    generateKey, 
-    buildProvLine, 
-    isSupported, 
-    requestPort, 
-    SerialConnection, 
-    waitForBooted, 
-    initFirmwareTab 
+  const {
+    CONFIG,
+    DEMO_MODE,
+    generateKey,
+    buildProvLine,
+    isSupported,
+    requestPort,
+    SerialConnection,
+    waitForBooted,
+    initFirmwareTab
   } = window.Whimbrel;
 
   let currentKey = null;
@@ -369,6 +370,34 @@
       }
       keysProvisioningInProgress = true;
       keysProvisionAborted = false;
+      if (DEMO_MODE) {
+        try {
+          setStatus("Writing key…");
+          await abortableDelay(600, () => keysProvisionAborted);
+          if (keysProvisionAborted) { setStatus(""); return; }
+          setStatus("Waiting for device to boot…");
+          await abortableDelay(900, () => keysProvisionAborted);
+          if (keysProvisionAborted) { setStatus(""); return; }
+          setStatus("Done. Device provisioned and running.");
+          if (deviceId === CONFIG.DEVICE_ID_FOB) {
+            fobFlashed = true;
+            keysProvisioningInPostCircle = true;
+            await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
+            keysProvisioningInPostCircle = false;
+            if (!keysProvisionAborted) showStep(2);
+          }
+          if (deviceId === CONFIG.DEVICE_ID_RX) receiverFlashed = true;
+          if (fobFlashed && receiverFlashed && currentStepIdx === 2) {
+            await showStep(3);
+            triggerConfetti();
+          }
+        } catch (e) {
+          if (!keysProvisionAborted) setStatus(e.message || "Demo error", true);
+        } finally {
+          keysProvisioningInProgress = false;
+        }
+        return;
+      }
       let serialConn = null;
       try {
         const port = await requestPort();

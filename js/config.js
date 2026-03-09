@@ -3,6 +3,8 @@
  */
 
 window.Whimbrel = window.Whimbrel || {};
+window.Whimbrel.DEMO_MODE = typeof window !== "undefined" && window.WHIMBREL_DEMO === true;
+
 window.Whimbrel.CONFIG = {
   // GitHub API configuration
   GITHUB_OWNER: "LPFchan",

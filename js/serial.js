@@ -6,6 +6,7 @@
   const { CONFIG } = window.Whimbrel;
 
   window.Whimbrel.isSupported = function() {
+    if (window.Whimbrel.DEMO_MODE) return true;
     return "serial" in navigator;
   };
 

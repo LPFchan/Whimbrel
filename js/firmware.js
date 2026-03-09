@@ -5,6 +5,7 @@
 (function() {
   const {
     CONFIG,
+    DEMO_MODE,
     fetchDeviceReleases,
     fetchAndParseFirmwareZip,
     DfuFlasher,
@@ -433,6 +434,30 @@
         }
         fwFlashingInProgress = true;
         fwFlashAborted = false;
+        if (DEMO_MODE) {
+          try {
+            setFwStatus("Downloading firmware package...", 0);
+            await abortableDelay(400, () => fwFlashAborted);
+            if (fwFlashAborted) return;
+            setFwStatus("Parsing zip file...", 0.1);
+            await abortableDelay(300, () => fwFlashAborted);
+            if (fwFlashAborted) return;
+            setFwStatus("Starting DFU process...", 0.2);
+            for (let i = 1; i <= 10; i++) {
+              if (fwFlashAborted) return;
+              setFwStatus("Writing firmware...", 0.2 + (i / 10) * 0.8);
+              await abortableDelay(200, () => fwFlashAborted);
+            }
+            if (fwFlashAborted) return;
+            setFwStatusSuccessWithLink();
+            triggerConfetti();
+          } catch (e) {
+            if (!fwFlashAborted) setFwStatus(`Error: ${e.message}`, null, true);
+          } finally {
+            fwFlashingInProgress = false;
+          }
+          return;
+        }
         if (!latestFwZipUrl && !latestFwZipBuffer) {
           setFwStatus("No firmware selected.", null, true);
           fwFlashingInProgress = false;

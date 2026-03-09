@@ -2,7 +2,8 @@
  * Application Constants and Configuration
  */
 
-export const CONFIG = {
+window.Whimbrel = window.Whimbrel || {};
+window.Whimbrel.CONFIG = {
   // GitHub API configuration
   GITHUB_OWNER: "LPFchan",
   

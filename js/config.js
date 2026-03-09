@@ -6,6 +6,7 @@ window.Whimbrel = window.Whimbrel || {};
 window.Whimbrel.CONFIG = {
   // GitHub API configuration
   GITHUB_OWNER: "LPFchan",
+  GITHUB_REPO: "Immogen",
   
   // Serial Connection
   BAUDRATE: 115200,

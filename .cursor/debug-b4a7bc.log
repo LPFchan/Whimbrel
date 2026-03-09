@@ -150,3 +150,5 @@
 {"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772827277248}
 {"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H5","location":"app.js:animateKeyGeneration","message":"Key generation styling","data":{},"timestamp":1772827303895}
 {"sessionId":"b4a7bc","runId":"run2","hypothesisId":"H1_fix","location":"app.js:runTimeout","message":"Timeout ring offset fixed","data":{"offset":"50.26px"},"timestamp":1772827306358}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":0,"panelWidth":640},"timestamp":1773050109641}
+{"sessionId":"b4a7bc","runId":"run1","hypothesisId":"H4","location":"app.js:init","message":"Stepper width check","data":{"stepperWidth":0,"panelWidth":640},"timestamp":1773068318843}

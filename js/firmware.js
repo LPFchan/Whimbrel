@@ -4,6 +4,7 @@
 
 (function() {
   const {
+    CONFIG,
     fetchDeviceReleases,
     fetchAndParseFirmwareZip,
     DfuFlasher,
@@ -178,7 +179,8 @@
     const CHEVRON_SVG = `<span style="font-size: 0.8em; margin-left: 8px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;"><polyline points="6 9 12 15 18 9"></polyline></svg></span>`;
 
     function selectRelease(releaseData, isLatest = false) {
-      const zipAsset = releaseData.assets.find((a) => a.name.endsWith(".zip"));
+      const prefix = fwSelectedDeviceName === "Guillemot" ? "guillemot" : "uguisu";
+      const zipAsset = releaseData.assets.find((a) => a.name.startsWith(prefix) && a.name.endsWith(".zip"));
       if (zipAsset) {
         selectedReleaseIdx = allReleases.indexOf(releaseData);
         latestFwZipUrl = zipAsset.browser_download_url;
@@ -196,8 +198,9 @@
     function buildReleaseDropdown() {
       if (!fwReleaseDropdown) return;
 
+      const prefix = fwSelectedDeviceName === "Guillemot" ? "guillemot" : "uguisu";
       const releaseItemsHtml = allReleases.map((r, idx) => {
-        const zipAsset = r.assets.find((a) => a.name.endsWith(".zip"));
+        const zipAsset = r.assets.find((a) => a.name.startsWith(prefix) && a.name.endsWith(".zip"));
         return `<div class="release-item${idx === selectedReleaseIdx ? " selected" : ""}" data-idx="${idx}">
           <strong>${r.tag_name}</strong>${idx === 0 ? '<span class="badge-latest">latest</span>' : ""}<br>
           <small style="color: var(--muted);">${zipAsset ? zipAsset.name : ""}</small>
@@ -299,8 +302,9 @@
     }
 
     async function fetchReleases(repoName) {
+      const repo = repoName || CONFIG.GITHUB_REPO;
       try {
-        if (fwReleaseInfo) fwReleaseInfo.innerHTML = `<span>Fetching releases for ${repoName}...</span>`;
+        if (fwReleaseInfo) fwReleaseInfo.innerHTML = `<span>Fetching releases for ${repo}...</span>`;
         if (btnFlashFw) btnFlashFw.disabled = true;
         latestFwZipUrl = null;
         latestFwZipBuffer = null;
@@ -308,7 +312,7 @@
         selectedReleaseIdx = 0;
         buildReleaseDropdown();
 
-        allReleases = await fetchDeviceReleases(repoName);
+        allReleases = await fetchDeviceReleases(repo);
         selectRelease(allReleases[0], true);
         buildReleaseDropdown();
       } catch (e) {
@@ -410,14 +414,14 @@
       btnFwGuillemot.addEventListener("click", () => {
         fwSelectedDeviceName = "Guillemot";
         showFwStep(1);
-        fetchReleases("Guillemot");
+        fetchReleases(CONFIG.GITHUB_REPO);
       });
     }
     if (btnFwUguisu) {
       btnFwUguisu.addEventListener("click", () => {
         fwSelectedDeviceName = "Uguisu";
         showFwStep(1);
-        fetchReleases("Uguisu");
+        fetchReleases(CONFIG.GITHUB_REPO);
       });
     }
 

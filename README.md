@@ -1,8 +1,10 @@
 # Whimbrel — Ninebot G30 BLE Immobilizer Companion Web App
 
-Whimbrel is the **companion web app** of a three-part immobilizer system ([Uguisu](https://github.com/LPFchan/Uguisu) fob + [Guillemot](https://github.com/LPFchan/Guillemot) receiver + Whimbrel) for the Ninebot Max G30. It serves two primary functions: flashing firmware updates directly from the browser, and handling the cryptographic generation and secure USB injection of a pre-shared AES-128-CCM key to pair the devices.
+[![Whimbrel](https://img.shields.io/badge/Pages-Whimbrel-blue?style=flat-square&logo=github&logoColor=white)](https://lpfchan.github.io/Whimbrel/)
 
-This repository contains the **Whimbrel static web app**. Note that shared protocol and cryptography logic is implemented in the [ImmoCommon](https://github.com/LPFchan/ImmoCommon) repository.
+Whimbrel is the **companion web app** of a three-part immobilizer system ([Immogen](https://github.com/LPFchan/Immogen) — Uguisu fob + Guillemot receiver + Whimbrel) for the Ninebot Max G30. It serves two primary functions: flashing firmware updates directly from the browser, and handling the cryptographic generation and secure USB injection of a pre-shared AES-128-CCM key to pair the devices.
+
+This repository contains the **Whimbrel static web app**. Note that shared protocol and cryptography logic lives in the [Immogen](https://github.com/LPFchan/Immogen) monorepo (lib/, Guillemot/, Uguisu/).
 
 ## Tech Stack
 
@@ -13,17 +15,17 @@ This repository contains the **Whimbrel static web app**. Note that shared proto
 
 ## Provisioning Protocol
 
-Whimbrel uses the Web Serial API because it requires physical USB-C access, eliminating the risk of over-the-air pairing interception. The nRF52840's VBUS detection wakes the MCU from strict sleep to handle the serial configuration.
+Whimbrel uses the Web Serial API because it requires physical USB-C access, eliminating the risk of over-the-air pairing interception and conserving the fob's battery. Firmware exposes no serial commands to read the key back (write-only). Requires Chrome or Edge.
 
 ### Serial Payload
 
 Whimbrel sends a delimited string to the MCU at 115200 baud:
-`PROV:<DEVICE_ID>:<128_BIT_HEX_KEY>:<RESET_COUNTER>:<CHECKSUM_HEX>\n`
+`PROV:<128_BIT_HEX_KEY>:<8_HEX_COUNTER>:<CHECKSUM_HEX>\n`
 
-Example: `PROV:UGUISU_01:4A2B9C8F...:00000000:a3f2\n`
+Example: `PROV:4a2b9c8f...32chars...:00000000:a3f2\n`
 
 - **CHECKSUM_HEX** is a 4-hex-character CRC-16-CCITT to detect transmission errors.
-- **Device Responses**: `ACK:PROV_SUCCESS\n`, `ERR:MALFORMED\n`, or `ERR:CHECKSUM\n`.
+- **Device Responses**: `ACK:PROV_SUCCESS\n`, `ERR:MALFORMED\n`, `ERR:CHECKSUM\n`, or `ERR:STORAGE\n` (storage write/verify failure).
 
 ### Ephemeral Memory
 

@@ -5,7 +5,6 @@
 
 import { CONFIG } from "./config.js";
 
-const OP_PROTOCOL_VERSION = 0x00;
 const OP_CREATE_OBJECT = 0x01;
 const OP_SET_PRN = 0x02;
 const OP_CALC_CHECKSUM = 0x03;
@@ -277,7 +276,7 @@ export class DfuFlasher {
 
       // Phase 1: Command (Init packet)
       onProgress("Initializing firmware update...");
-      const cmdInfo = await this.selectObject(OBJ_COMMAND);
+      await this.selectObject(OBJ_COMMAND);
       
       await this.createObject(OBJ_COMMAND, this.datBytes.length);
       await this.writeObject(this.datBytes);

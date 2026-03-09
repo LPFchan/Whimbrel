@@ -824,6 +824,9 @@ document.addEventListener("DOMContentLoaded", () => {
           fwStep2.classList.add("step-visible");
           if (fwDeviceTitle) fwDeviceTitle.textContent = `Flashing ${fwSelectedDeviceName}`;
           resetFwFlashUI();
+          if (!latestFwZipUrl && !latestFwZipBuffer && fwReleaseDropdown) {
+            setTimeout(() => fwReleaseDropdown.classList.add('visible'), 50);
+          }
         }
       });
     })();
@@ -914,81 +917,174 @@ document.addEventListener("DOMContentLoaded", () => {
   const fwStatus = document.getElementById("fw-status");
   const fwProgressContainer = document.getElementById("fw-progress-container");
   const fwProgressBar = document.getElementById("fw-progress-bar");
+  const fwLocalFileInput = document.getElementById("fw-local-file-input");
 
   let latestFwZipUrl = null;
   let latestFwZipBuffer = null;
   let allReleases = [];
+  let selectedReleaseIdx = 0;
+
+  const CHEVRON_SVG = `<span style="font-size: 0.8em; margin-left: 8px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;"><polyline points="6 9 12 15 18 9"></polyline></svg></span>`;
 
   async function fetchReleases(repoName) {
     try {
       fwReleaseInfo.innerHTML = `<span>Fetching releases for ${repoName}...</span>`;
-      fwReleaseDropdown.innerHTML = "";
       btnFlashFw.disabled = true;
       latestFwZipUrl = null;
       latestFwZipBuffer = null;
       allReleases = [];
+      selectedReleaseIdx = 0;
+      buildReleaseDropdown();
 
       if (DEMO_MODE) {
         allReleases = [{ tag_name: "v0.1.0", html_url: "#", assets: [{ name: `${repoName}-v0.1.0.zip`, browser_download_url: "#" }] }];
         selectRelease(allReleases[0], true);
-        fwReleaseDropdown.innerHTML = `<div class="release-item selected" data-idx="0"><strong>v0.1.0</strong><span class="badge-latest">latest</span><br><small style="color: var(--muted);">${repoName}-v0.1.0.zip</small></div>`;
-        fwReleaseInfo.innerHTML = `<div><span>v0.1.0</span><span class="badge-latest">latest</span><br><small style="color: var(--muted);">${repoName}-v0.1.0.zip</small></div><span style="font-size: 0.8em; margin-left: 8px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;"><polyline points="6 9 12 15 18 9"></polyline></svg></span>`;
-        btnFlashFw.disabled = false;
+        buildReleaseDropdown();
         return;
       }
 
-      const res = await fetch(`https://api.github.com/repos/LPFchan/${repoName}/releases`);
+      const fullRepo = repoName.includes('/') ? repoName : `LPFchan/${repoName}`;
+      const res = await fetch(`https://api.github.com/repos/${fullRepo}/releases`);
       if (!res.ok) throw new Error("Failed to fetch releases");
-      
+
       const data = await res.json();
       allReleases = data.filter(r => r.assets && r.assets.some(a => a.name.endsWith('.zip')));
-      
+
       if (allReleases.length === 0) throw new Error("No .zip firmware package found in releases");
-      
-      // Select the most recent release by default
+
       selectRelease(allReleases[0], true);
-      
-      // Populate dropdown
-      fwReleaseDropdown.innerHTML = allReleases.map((r, idx) => {
-        const zipAsset = r.assets.find(a => a.name.endsWith('.zip'));
-        return `<div class="release-item ${idx === 0 ? 'selected' : ''}" data-idx="${idx}">
-          <strong>${r.tag_name}</strong>${idx === 0 ? '<span class="badge-latest">latest</span>' : ''}<br>
-          <small style="color: var(--muted);">${zipAsset.name}</small>
-        </div>`;
-      }).join('');
-      
-      // Add event listeners to dropdown items
-      const items = fwReleaseDropdown.querySelectorAll('.release-item');
-      items.forEach(item => {
-        item.addEventListener('click', (e) => {
-          e.stopPropagation();
-          items.forEach(i => i.classList.remove('selected'));
-          item.classList.add('selected');
-          selectRelease(allReleases[item.dataset.idx], parseInt(item.dataset.idx) === 0);
-          fwReleaseDropdown.classList.remove('visible');
-        });
-      });
+      buildReleaseDropdown();
     } catch (e) {
       fwReleaseInfo.innerHTML = `<span style="color: var(--error)">Error: ${e.message}</span>`;
       btnFlashFw.disabled = true;
+      buildReleaseDropdown();
+      fwReleaseDropdown.classList.add("visible");
     }
   }
 
   function selectRelease(releaseData, isLatest = false) {
     const zipAsset = releaseData.assets.find(a => a.name.endsWith('.zip'));
     if (zipAsset) {
+      selectedReleaseIdx = allReleases.indexOf(releaseData);
       latestFwZipUrl = zipAsset.browser_download_url;
-      latestFwZipBuffer = null; // Clear cached buffer
-      fwReleaseInfo.innerHTML = `<div><a href="${releaseData.html_url}" target="_blank" onclick="event.stopPropagation()">${releaseData.tag_name}</a>${isLatest ? '<span class="badge-latest">latest</span>' : ''}<br><small style="color: var(--muted);">${zipAsset.name}</small></div><span style="font-size: 0.8em; margin-left: 8px;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin: auto;"><polyline points="6 9 12 15 18 9"></polyline></svg></span>`;
+      latestFwZipBuffer = null;
+      fwReleaseInfo.innerHTML =
+        `<div><a href="${releaseData.html_url}" target="_blank" onclick="event.stopPropagation()">${releaseData.tag_name}</a>${isLatest ? '<span class="badge-latest">latest</span>' : ''}<br><small style="color: var(--muted);">${zipAsset.name}</small></div>` + CHEVRON_SVG;
       btnFlashFw.disabled = false;
     }
   }
 
+  function buildReleaseDropdown() {
+    const releaseItemsHtml = allReleases.map((r, idx) => {
+      const zipAsset = r.assets.find(a => a.name.endsWith('.zip'));
+      return `<div class="release-item${idx === selectedReleaseIdx ? " selected" : ""}" data-idx="${idx}">
+        <strong>${r.tag_name}</strong>${idx === 0 ? '<span class="badge-latest">latest</span>' : ''}<br>
+        <small style="color: var(--muted);">${zipAsset ? zipAsset.name : ''}</small>
+      </div>`;
+    }).join('');
+
+    fwReleaseDropdown.innerHTML = releaseItemsHtml +
+      `<div class="release-separator"></div>
+      <div class="release-item release-item-custom" data-action="custom-repo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        Custom GitHub repo...
+      </div>
+      <div class="release-item release-item-custom" data-action="local-file">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        Load local .zip...
+      </div>`;
+
+    fwReleaseDropdown.querySelectorAll('.release-item[data-idx]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(item.dataset.idx);
+        selectRelease(allReleases[idx], idx === 0);
+        fwReleaseDropdown.classList.remove('visible');
+      });
+    });
+
+    const customRepoEl = fwReleaseDropdown.querySelector('[data-action="custom-repo"]');
+    if (customRepoEl) customRepoEl.addEventListener('click', (e) => { e.stopPropagation(); showCustomRepoForm(); });
+
+    const localFileEl = fwReleaseDropdown.querySelector('[data-action="local-file"]');
+    if (localFileEl) localFileEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fwReleaseDropdown.classList.remove('visible');
+      if (fwLocalFileInput) fwLocalFileInput.click();
+    });
+  }
+
+  function showCustomRepoForm() {
+    fwReleaseDropdown.innerHTML = `
+      <div class="custom-repo-form">
+        <button type="button" class="custom-repo-back" id="fw-custom-repo-back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Back
+        </button>
+        <div class="custom-repo-input-row">
+          <input type="text" id="fw-custom-repo-input" class="custom-repo-input" placeholder="owner/repo">
+          <button type="button" id="fw-custom-repo-fetch" class="custom-repo-fetch-btn">Fetch</button>
+        </div>
+      </div>
+    `;
+
+    const form = fwReleaseDropdown.querySelector('.custom-repo-form');
+    if (form) form.addEventListener('click', (e) => e.stopPropagation());
+
+    const backBtn = document.getElementById('fw-custom-repo-back');
+    const inputEl = document.getElementById('fw-custom-repo-input');
+    const fetchBtn = document.getElementById('fw-custom-repo-fetch');
+
+    setTimeout(() => { if (inputEl) inputEl.focus(); }, 0);
+
+    if (backBtn) backBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      buildReleaseDropdown();
+      if (allReleases.length === 0) fwReleaseDropdown.classList.remove('visible');
+    });
+
+    const doFetch = async () => {
+      const repo = inputEl ? inputEl.value.trim() : '';
+      if (!repo) return;
+      fwReleaseDropdown.classList.remove('visible');
+      await fetchReleases(repo);
+    };
+
+    if (fetchBtn) fetchBtn.addEventListener('click', (e) => { e.stopPropagation(); doFetch(); });
+    if (inputEl) {
+      inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') doFetch(); e.stopPropagation(); });
+      inputEl.addEventListener('click', (e) => e.stopPropagation());
+    }
+  }
+
+  if (fwLocalFileInput) {
+    fwLocalFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const buffer = await file.arrayBuffer();
+        selectedReleaseIdx = -1;
+        latestFwZipUrl = 'local';
+        latestFwZipBuffer = buffer;
+        fwReleaseInfo.innerHTML =
+          `<div><strong>${file.name}</strong><br><small style="color: var(--muted);">local file</small></div>` + CHEVRON_SVG;
+        btnFlashFw.disabled = false;
+        buildReleaseDropdown();
+      } catch (err) {
+        fwReleaseInfo.innerHTML = `<span style="color: var(--error)">Error reading file: ${err.message}</span>`;
+      }
+      fwLocalFileInput.value = '';
+    });
+  }
+
   // Toggle dropdown on info click
   fwReleaseInfo.addEventListener('click', () => {
-    if (allReleases.length > 0) {
-      fwReleaseDropdown.classList.toggle('visible');
-    }
+    fwReleaseDropdown.classList.toggle('visible');
+  });
+
+  // Close dropdown when clicking its background (covers the selector button)
+  fwReleaseDropdown.addEventListener('click', () => {
+    fwReleaseDropdown.classList.remove('visible');
   });
 
   // Close dropdown when clicking outside
@@ -1131,8 +1227,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       return;
     }
-    if (!latestFwZipUrl) {
-      setFwStatus("No firmware URL available to download.", null, true);
+    if (!latestFwZipUrl && !latestFwZipBuffer) {
+      setFwStatus("No firmware selected.", null, true);
       fwFlashingInProgress = false;
       return;
     }
@@ -1141,9 +1237,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       port = await requestPort();
       if (fwFlashAborted) return;
-      
-      setFwStatus("Downloading firmware package...", 0);
-      
+
+      setFwStatus(latestFwZipUrl === 'local' ? "Parsing firmware..." : "Downloading firmware package...", 0);
+
       if (!latestFwZipBuffer) {
         const res = await fetch(latestFwZipUrl);
         if (!res.ok) throw new Error("Failed to download firmware zip");

@@ -640,22 +640,108 @@ header a:hover {
 
 .release-dropdown {
   position: absolute;
-  top: 100%;
+  top: 0;
   left: 0;
   width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow);
-  margin-top: 8px;
   z-index: 10;
   max-height: 200px;
   overflow-y: auto;
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .release-dropdown.visible {
-  display: block;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.release-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.release-item-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.release-item-custom:hover {
+  color: var(--text);
+}
+
+.custom-repo-form {
+  padding: 12px 16px;
+}
+
+.custom-repo-back {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+
+.custom-repo-back:hover {
+  color: var(--text);
+}
+
+.custom-repo-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.custom-repo-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.custom-repo-input:focus {
+  border-color: var(--accent);
+}
+
+.custom-repo-fetch-btn {
+  padding: 8px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.custom-repo-fetch-btn:hover {
+  background: var(--accent-hover);
 }
 
 .release-item {

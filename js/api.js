@@ -6,7 +6,8 @@
   const { CONFIG } = window.Whimbrel;
 
   window.Whimbrel.fetchDeviceReleases = async function(repoName) {
-    const res = await fetch(`https://api.github.com/repos/${CONFIG.GITHUB_OWNER}/${repoName}/releases`);
+    const fullRepo = repoName.includes('/') ? repoName : `${CONFIG.GITHUB_OWNER}/${repoName}`;
+    const res = await fetch(`https://api.github.com/repos/${fullRepo}/releases`);
     if (!res.ok) throw new Error("Failed to fetch releases");
 
     const data = await res.json();

@@ -17,7 +17,7 @@
       </section>
 
       <section id="dashboard-tutorial" class="step step-hidden">
-        <div class="nav-header">
+        <div class="nav-header" style="position: relative; transform: none; margin-bottom: 20px; top: auto;">
           <button id="btn-tutorial-back" class="btn-back" type="button" aria-label="Go back">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             Back
@@ -31,11 +31,11 @@
           </div>
           <div class="instruction-item">
             <div class="instruction-number">2</div>
-            <p>Press the button on your Uguisu fob to unlock the vehicle.</p>
+            <p>Press the button on your Uguisu fob to unlock the vehicle. This enables a 30-second window.</p>
           </div>
           <div class="instruction-item">
             <div class="instruction-number">3</div>
-            <p>This enables a 30-second window. Click Connect below to provision your phone.</p>
+            <p>Click Connect below to provision your phone.</p>
           </div>
         </div>
         <button id="btn-tutorial-connect" type="button" class="btn-huge">Connect</button>
@@ -51,7 +51,7 @@
       </section>
 
       <section id="dashboard-add-phone" class="step step-hidden">
-        <div class="nav-header">
+        <div class="nav-header" style="position: relative; transform: none; margin-bottom: 20px; top: auto;">
           <button id="btn-dashboard-back" class="btn-back" type="button" aria-label="Go back">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             Back

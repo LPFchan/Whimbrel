@@ -10,10 +10,9 @@
     // Build the UI dynamically
     container.innerHTML = `
       <section id="dashboard-connect" class="step step-visible">
-        <h2>Manage Keys</h2>
-        <p>Before connecting, press the button on your <strong>Uguisu fob</strong> to unlock the vehicle. This enables a 30-second provisioning window.</p>
-        <button id="btn-ble-connect" type="button" class="btn-huge">Connect via BLE</button>
-        <button id="btn-no-fob" type="button" style="background:none; border:none; color:var(--muted); font-family:inherit; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:underline; margin-top:16px;">I don't have the hardware key</button>
+        <h2 style="margin-bottom: 30px;">Manage Keys</h2>
+        <button id="btn-ble-connect" type="button" class="btn-huge">Connect</button>
+        <button id="btn-no-fob" type="button" style="background:none; border:none; color:var(--muted); font-family:inherit; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:underline; margin-top:16px;">I don't have the phone key</button>
         <div id="ble-status" class="status" aria-live="polite"></div>
       </section>
 
@@ -24,21 +23,23 @@
             Back
           </button>
         </div>
-        <h2>Lost Key Recovery</h2>
-        <div class="instructions-list" style="margin-top: 30px;">
+        <h2>Add Phone Key</h2>
+        <div class="instructions-list" style="margin-top: 30px; margin-bottom: 30px;">
           <div class="instruction-item">
             <div class="instruction-number">1</div>
-            <p>If you lost your Uguisu fob, you cannot authorize wireless changes.</p>
+            <p>Get near your vehicle.</p>
           </div>
           <div class="instruction-item">
             <div class="instruction-number">2</div>
-            <p>You must physically access the Guillemot receiver inside your vehicle.</p>
+            <p>Press the button on your Uguisu fob to unlock the vehicle.</p>
           </div>
           <div class="instruction-item">
             <div class="instruction-number">3</div>
-            <p>Connect it to your computer via USB-C and use the <strong>USB Provisioning</strong> tab to reset your keys.</p>
+            <p>This enables a 30-second window. Click Connect below to provision your phone.</p>
           </div>
         </div>
+        <button id="btn-tutorial-connect" type="button" class="btn-huge">Connect</button>
+        <div id="tut-ble-status" class="status" aria-live="polite"></div>
       </section>
 
       <section id="dashboard-main" class="step step-hidden">
@@ -83,7 +84,9 @@
     const btnConnect = document.getElementById('btn-ble-connect');
     const btnNoFob = document.getElementById('btn-no-fob');
     const btnTutorialBack = document.getElementById('btn-tutorial-back');
+    const btnTutorialConnect = document.getElementById('btn-tutorial-connect');
     const status = document.getElementById('ble-status');
+    const tutStatus = document.getElementById('tut-ble-status');
     const secConnect = document.getElementById('dashboard-connect');
     const secTutorial = document.getElementById('dashboard-tutorial');
     const secMain = document.getElementById('dashboard-main');
@@ -184,24 +187,34 @@
       secConnect.classList.add('step-visible');
     });
 
-    btnConnect.addEventListener('click', async () => {
+    async function doConnect(statusEl) {
+      function setLocalStatus(msg, error = false) {
+        statusEl.textContent = msg;
+        statusEl.className = "status " + (error ? "error" : "success");
+      }
+
       try {
-        setStatus("Connecting to device...");
+        setLocalStatus("Connecting to device...");
         bleManager = new window.Whimbrel.BLEManager();
         bleManager.onResponse = handleResponse;
         await bleManager.connect();
-        setStatus("Connected!");
+        setLocalStatus("Connected!");
         
         secConnect.classList.remove('step-visible');
         secConnect.classList.add('step-hidden');
+        secTutorial.classList.remove('step-visible');
+        secTutorial.classList.add('step-hidden');
         secMain.classList.remove('step-hidden');
         secMain.classList.add('step-visible');
         
         await fetchSlots();
       } catch (e) {
-        setStatus("Connection failed: " + e.message, true);
+        setLocalStatus("Connection failed: " + e.message, true);
       }
-    });
+    }
+
+    btnConnect.addEventListener('click', () => doConnect(status));
+    btnTutorialConnect.addEventListener('click', () => doConnect(tutStatus));
 
     btnAddPhone.addEventListener('click', () => {
       isAddingPhone = true;

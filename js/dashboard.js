@@ -11,7 +11,7 @@
     container.innerHTML = `
       <section id="dashboard-connect" class="step step-visible">
         <h2>Manage Keys</h2>
-        <p>Connect to Guillemot via BLE to manage slots and provision new devices.</p>
+        <p>Before connecting, press the button on your <strong>Uguisu fob</strong> to unlock the vehicle. This enables a 30-second provisioning window.</p>
         <button id="btn-ble-connect" type="button" class="btn-huge">Connect via BLE</button>
         <div id="ble-status" class="status" aria-live="polite"></div>
       </section>

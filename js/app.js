@@ -883,7 +883,9 @@
     // Dashboard Modal Logic
     const btnManageKeys = document.getElementById("btn-manage-keys");
     const dashboardOverlay = document.getElementById("dashboard-overlay");
-    const btnDashboardClose = document.getElementById("btn-dashboard-close");
+    
+    // (Note: The close buttons inside the overlay are now handled by dashboard.js 
+    // because they are generated dynamically.)
 
     if (btnManageKeys && dashboardOverlay) {
       btnManageKeys.addEventListener("click", () => {
@@ -891,10 +893,6 @@
         if (window.Whimbrel.initDashboard) {
           window.Whimbrel.initDashboard(); // refresh dashboard
         }
-      });
-
-      btnDashboardClose.addEventListener("click", () => {
-        dashboardOverlay.classList.remove("visible");
       });
     }
 

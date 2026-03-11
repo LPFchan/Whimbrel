@@ -290,6 +290,34 @@
 
       try {
         setLocalStatus("Connecting to device...");
+        
+        if (window.Whimbrel.DEMO_MODE) {
+          await new Promise(r => setTimeout(r, 1000));
+          setLocalStatus("Connected!");
+          
+          const activeSec = secConnect.classList.contains('step-visible') ? secConnect : secTutorial;
+          activeSec.classList.add('step-fading-out');
+          
+          setTimeout(() => {
+            animateModalHeightChange(() => {
+              secConnect.classList.remove('step-visible', 'step-fading-out');
+              secConnect.classList.add('step-hidden');
+              secTutorial.classList.remove('step-visible', 'step-fading-out');
+              secTutorial.classList.add('step-hidden');
+              secMain.classList.remove('step-hidden');
+              secMain.classList.add('step-visible');
+            });
+            slots = [
+              {"id":0,"used":true,"counter":4821,"name":"Uguisu"},
+              {"id":1,"used":false,"counter":0,"name":""},
+              {"id":2,"used":false,"counter":0,"name":""},
+              {"id":3,"used":false,"counter":0,"name":""}
+            ];
+            renderSlots();
+          }, 200);
+          return;
+        }
+
         bleManager = new window.Whimbrel.BLEManager();
         bleManager.onResponse = handleResponse;
         await bleManager.connect();
@@ -389,9 +417,13 @@
 
         if (pinStatus) pinStatus.textContent = "Provisioning to Guillemot...";
 
-        await bleManager.sendCommand(`SETPIN:${pin}`);
-        await window.Whimbrel.abortableDelay(100);
-        await bleManager.sendCommand(`PROV:1:${phoneKeyHex}:0:`);
+        if (window.Whimbrel.DEMO_MODE) {
+          await new Promise(r => setTimeout(r, 1200));
+        } else {
+          await bleManager.sendCommand(`SETPIN:${pin}`);
+          await window.Whimbrel.abortableDelay(100);
+          await bleManager.sendCommand(`PROV:1:${phoneKeyHex}:0:`);
+        }
 
         // Render QR
         QRCode.toCanvas(qrCanvas, qrUrl, { width: 300, margin: 2 }, function (error) {

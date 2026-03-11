@@ -21,8 +21,21 @@
         </div>
         
         <button id="btn-ble-connect" type="button" class="btn-huge" style="margin-top: 20px;">Connect</button>
-        <button id="btn-no-fob" type="button" style="background:none; border:none; color:var(--muted); font-family:inherit; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:underline; margin-top:16px;">I don't have the phone key</button>
+        <button id="btn-no-fob" type="button" style="background:none; border:none; color:var(--muted); font-family:inherit; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:underline; margin-top:16px;">I don't have a phone key</button>
         <div id="ble-status" class="status" aria-live="polite"></div>
+      </section>
+
+      <section id="dashboard-no-fob" class="step step-hidden">
+        <div style="position: relative; min-height: 40px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+          <div class="nav-header" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); margin: 0;">
+            <button id="btn-no-fob-back" class="btn-back" type="button" aria-label="Go back">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              Back
+            </button>
+          </div>
+          <h2 style="margin: 0; font-size: 1.75rem;">No Phone Key</h2>
+        </div>
+        <p>You can manage device slots in the settings page of the app.</p>
       </section>
 
       <section id="dashboard-tutorial" class="step step-hidden">
@@ -33,7 +46,7 @@
               Back
             </button>
           </div>
-          <h2 style="margin: 0; font-size: 1.75rem;">Add Phone Key</h2>
+          <h2 style="margin: 0; font-size: 1.75rem;">Add a Phone Key</h2>
         </div>
         
         <div class="instructions-list" style="margin-top: 30px; margin-bottom: 30px;">
@@ -50,22 +63,22 @@
             <p>Click Connect below to provision your phone.</p>
           </div>
         </div>
-        <button id="btn-tutorial-connect" type="button" class="btn-huge">Connect</button>
-        <div id="tut-ble-status" class="status" aria-live="polite"></div>
+        <button id="btn-tutorial-connect" type="button" class="btn-huge">Yes</button>
+        <button id="btn-tutorial-skip" type="button" style="background:none; border:none; color:var(--muted); font-family:inherit; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:underline; margin-top:16px;">Skip for now</button>
       </section>
 
       <section id="dashboard-main" class="step step-hidden">
         <div style="position: relative; min-height: 40px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
           <div class="nav-header" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); margin: 0;">
-            <button id="btn-dashboard-close-2" class="btn-back" type="button" aria-label="Close">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              Close
+            <button id="btn-dashboard-back-from-main" class="btn-back" type="button" aria-label="Back">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              Back
             </button>
           </div>
           <h2 style="margin: 0; font-size: 1.75rem;">Device Slots</h2>
         </div>
         
-        <div id="slots-container">
+        <div id="slots-container" style="display: flex; flex-direction: column; width: 100%; visibility: visible;">
           <!-- Slots will be populated here -->
         </div>
         <button id="btn-add-phone" type="button" class="btn-huge" style="margin-top: 20px;">Add Phone (Slot 1)</button>
@@ -82,8 +95,7 @@
           <h2 style="margin: 0; font-size: 1.75rem;">Create PIN</h2>
         </div>
         
-        <p>Press the button once on your Uguisu fob to authorize setup.</p>
-        <p style="font-size: 0.9rem; color: #888;">Then, enter a 6-digit PIN below.</p>
+        <p style="font-size: 0.9rem; color: #888;">Enter a 6-digit PIN. You will need to remember this PIN to manage other keys and access settings in the app.</p>
         
         <div class="pin-circles" id="dash-pin-circles" style="display: flex; gap: 10px; justify-content: center; margin: 25px 0;">
           <div class="pin-circle"></div><div class="pin-circle"></div><div class="pin-circle"></div>
@@ -116,13 +128,16 @@
 
     const btnConnect = document.getElementById('btn-ble-connect');
     const btnNoFob = document.getElementById('btn-no-fob');
+    const btnNoFobBack = document.getElementById('btn-no-fob-back');
     const btnTutorialBack = document.getElementById('btn-tutorial-back');
     const btnTutorialConnect = document.getElementById('btn-tutorial-connect');
+    const btnTutorialSkip = document.getElementById('btn-tutorial-skip');
     const btnClose1 = document.getElementById('btn-dashboard-close-1');
-    const btnClose2 = document.getElementById('btn-dashboard-close-2');
+    const btnBackFromMain = document.getElementById('btn-dashboard-back-from-main');
     const btnClose3 = document.getElementById('btn-dashboard-close-3');
     const status = document.getElementById('ble-status');
     const tutStatus = document.getElementById('tut-ble-status');
+    const secNoFob = document.getElementById('dashboard-no-fob');
     const secConnect = document.getElementById('dashboard-connect');
     const secTutorial = document.getElementById('dashboard-tutorial');
     const secMain = document.getElementById('dashboard-main');
@@ -204,6 +219,15 @@
           div.style.display = "flex";
           div.style.justifyContent = "space-between";
           div.style.alignItems = "center";
+          div.style.cursor = "pointer";
+          div.style.transition = "background 0.2s";
+          div.addEventListener('mouseenter', () => div.style.background = "#f0f0f0");
+          div.addEventListener('mouseleave', () => div.style.background = "transparent");
+          
+          div.addEventListener('click', () => {
+             // Logic to select slot, maybe trigger edit or something else
+             console.log("Slot clicked:", slot.id);
+          });
           
           const info = document.createElement('div');
           info.innerHTML = `<strong>Slot ${slot.id}:</strong> ${slot.used ? (slot.name || 'Unnamed') : 'Empty'}<br>` +
@@ -264,8 +288,20 @@
         animateModalHeightChange(() => {
           secConnect.classList.remove('step-visible', 'step-fading-out');
           secConnect.classList.add('step-hidden');
-          secTutorial.classList.remove('step-hidden');
-          secTutorial.classList.add('step-visible');
+          secNoFob.classList.remove('step-hidden');
+          secNoFob.classList.add('step-visible');
+        });
+      }, 200);
+    });
+
+    btnNoFobBack.addEventListener('click', () => {
+      secNoFob.classList.add('step-fading-out');
+      setTimeout(() => {
+        animateModalHeightChange(() => {
+          secNoFob.classList.remove('step-visible', 'step-fading-out');
+          secNoFob.classList.add('step-hidden');
+          secConnect.classList.remove('step-hidden');
+          secConnect.classList.add('step-visible');
         });
       }, 200);
     });
@@ -292,13 +328,51 @@
         setLocalStatus("Connecting to device...");
         
         if (window.Whimbrel.DEMO_MODE) {
-          await new Promise(r => setTimeout(r, 1000));
-          setLocalStatus("Connected!");
+          // If we are in the middle of a flow and requested a BLE connection in demo mode, just skip it.
+          // This ensures that the demo doesn't force a real BLE request.
+          console.log("Demo mode: skipping real BLE connection");
+          setLocalStatus("Connected (Demo)!");
           
+          slots = [
+            {"id":0,"used":true,"counter":4821,"name":"Uguisu"},
+            {"id":1,"used":false,"counter":0,"name":""},
+            {"id":2,"used":false,"counter":0,"name":""},
+            {"id":3,"used":false,"counter":0,"name":""}
+          ];
+
+          bleManager = {
+            onResponse: null,
+            connect: async () => {},
+            disconnect: () => {},
+            sendCommand: async (cmd) => {
+              await new Promise(r => setTimeout(r, 100));
+              if (cmd === "SLOTS?") {
+                if (bleManager.onResponse) bleManager.onResponse(JSON.stringify({ status: "ok", slots: slots }));
+              } else if (cmd.startsWith("RENAME:")) {
+                const parts = cmd.split(":");
+                const id = parseInt(parts[1], 10);
+                const newName = parts[2];
+                const slot = slots.find(s => s.id === id);
+                if (slot) slot.name = newName;
+                if (bleManager.onResponse) bleManager.onResponse(JSON.stringify({ status: "ok" }));
+              } else if (cmd.startsWith("PROV:")) {
+                const parts = cmd.split(":");
+                const id = parseInt(parts[1], 10);
+                const slot = slots.find(s => s.id === id);
+                if (slot) {
+                  slot.used = true;
+                  slot.name = parts[4] || "iPhone";
+                }
+              } else if (cmd.startsWith("SETPIN:")) {
+                // mock auth
+              }
+            }
+          };
+
           const activeSec = secConnect.classList.contains('step-visible') ? secConnect : secTutorial;
           activeSec.classList.add('step-fading-out');
           
-          setTimeout(() => {
+          setTimeout(async () => {
             animateModalHeightChange(() => {
               secConnect.classList.remove('step-visible', 'step-fading-out');
               secConnect.classList.add('step-hidden');
@@ -307,13 +381,7 @@
               secMain.classList.remove('step-hidden');
               secMain.classList.add('step-visible');
             });
-            slots = [
-              {"id":0,"used":true,"counter":4821,"name":"Uguisu"},
-              {"id":1,"used":false,"counter":0,"name":""},
-              {"id":2,"used":false,"counter":0,"name":""},
-              {"id":3,"used":false,"counter":0,"name":""}
-            ];
-            renderSlots();
+            await fetchSlots();
           }, 200);
           return;
         }
@@ -344,6 +412,19 @@
 
     btnConnect.addEventListener('click', () => doConnect(status));
     btnTutorialConnect.addEventListener('click', () => doConnect(tutStatus));
+    btnTutorialSkip.addEventListener('click', () => {
+      // Logic for skipping: directly move to main dashboard view
+      secTutorial.classList.add('step-fading-out');
+      setTimeout(() => {
+        animateModalHeightChange(() => {
+          secTutorial.classList.remove('step-visible', 'step-fading-out');
+          secTutorial.classList.add('step-hidden');
+          secMain.classList.remove('step-hidden');
+          secMain.classList.add('step-visible');
+        });
+        fetchSlots();
+      }, 200);
+    });
 
     btnAddPhone.addEventListener('click', () => {
       isAddingPhone = true;
@@ -417,13 +498,10 @@
 
         if (pinStatus) pinStatus.textContent = "Provisioning to Guillemot...";
 
-        if (window.Whimbrel.DEMO_MODE) {
-          await new Promise(r => setTimeout(r, 1200));
-        } else {
-          await bleManager.sendCommand(`SETPIN:${pin}`);
-          await window.Whimbrel.abortableDelay(100);
-          await bleManager.sendCommand(`PROV:1:${phoneKeyHex}:0:`);
-        }
+        await bleManager.sendCommand(`SETPIN:${pin}`);
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        await delay(100);
+        await bleManager.sendCommand(`PROV:1:${phoneKeyHex}:0:`);
 
         // Render QR
         QRCode.toCanvas(qrCanvas, qrUrl, { width: 300, margin: 2 }, function (error) {
@@ -460,7 +538,12 @@
         val = val.slice(0, -1);
       } else if (/^[0-9]$/.test(e.key) && val.length < 6) {
         val += e.key;
+      } else {
+        return;
       }
+      
+      // Prevent multiple submissions if key is held down or input is processed twice
+      if (input.value === val) return;
       
       input.value = val;
       updatePinUI(val);
@@ -495,7 +578,7 @@
       if (overlay) overlay.classList.remove("visible");
       
       // Reset view to connect on close
-      const secs = [secTutorial, secMain, secAddPhone, secShowQR];
+      const secs = [secTutorial, secNoFob, secMain, secAddPhone, secShowQR];
       secs.forEach(s => {
         if(s) {
           s.classList.remove('step-visible');
@@ -511,7 +594,17 @@
     };
     
     if (btnClose1) btnClose1.addEventListener('click', closeOverlay);
-    if (btnClose2) btnClose2.addEventListener('click', closeOverlay);
+    if (btnBackFromMain) btnBackFromMain.addEventListener('click', () => {
+        secMain.classList.add('step-fading-out');
+        setTimeout(() => {
+          animateModalHeightChange(() => {
+            secMain.classList.remove('step-visible', 'step-fading-out');
+            secMain.classList.add('step-hidden');
+            secConnect.classList.remove('step-hidden');
+            secConnect.classList.add('step-visible');
+          });
+        }, 200);
+    });
     if (btnClose3) btnClose3.addEventListener('click', closeOverlay);
   };
 

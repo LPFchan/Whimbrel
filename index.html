@@ -90,8 +90,8 @@
     </div>
 
     <div class="tabs" id="main-tabs">
-      <button class="tab-btn active" data-tab="tab-firmware"><span>Firmware</span></button>
-      <button class="tab-btn" data-tab="tab-keys"><span>Keys</span></button>
+      <button class="tab-btn" data-tab="tab-firmware"><span>Firmware</span></button>
+      <button class="tab-btn active" data-tab="tab-keys"><span>Keys</span></button>
     </div>
 
     <!-- Dashboard Overlay -->
@@ -105,7 +105,7 @@
 
     <main id="main-panel" class="main-panel">
       <!-- Keys Tab Content -->
-      <div id="tab-keys" class="tab-content" style="display: none;">
+      <div id="tab-keys" class="tab-content active" style="display: block;">
         <div id="stepper" class="stepper">
         <div id="nav-header" class="nav-header step-hidden">
           <button id="btn-back" class="btn-back" type="button" aria-label="Go back">
@@ -193,7 +193,7 @@
       </div>
 
       <!-- Firmware Tab Content -->
-      <div id="tab-firmware" class="tab-content step active">
+      <div id="tab-firmware" class="tab-content step" style="display: none;">
         <section id="fw-step-1" class="step step-visible">
           <div class="device-tiles">
             <button id="btn-fw-guillemot" type="button" class="btn-tile">

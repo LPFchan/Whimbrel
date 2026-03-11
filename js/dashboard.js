@@ -13,7 +13,32 @@
         <h2>Manage Keys</h2>
         <p>Before connecting, press the button on your <strong>Uguisu fob</strong> to unlock the vehicle. This enables a 30-second provisioning window.</p>
         <button id="btn-ble-connect" type="button" class="btn-huge">Connect via BLE</button>
+        <button id="btn-no-fob" type="button" style="background:none; border:none; color:var(--muted); font-family:inherit; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:underline; margin-top:16px;">I don't have the hardware key</button>
         <div id="ble-status" class="status" aria-live="polite"></div>
+      </section>
+
+      <section id="dashboard-tutorial" class="step step-hidden">
+        <div class="nav-header">
+          <button id="btn-tutorial-back" class="btn-back" type="button" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back
+          </button>
+        </div>
+        <h2>Lost Key Recovery</h2>
+        <div class="instructions-list" style="margin-top: 30px;">
+          <div class="instruction-item">
+            <div class="instruction-number">1</div>
+            <p>If you lost your Uguisu fob, you cannot authorize wireless changes.</p>
+          </div>
+          <div class="instruction-item">
+            <div class="instruction-number">2</div>
+            <p>You must physically access the Guillemot receiver inside your vehicle.</p>
+          </div>
+          <div class="instruction-item">
+            <div class="instruction-number">3</div>
+            <p>Connect it to your computer via USB-C and use the <strong>USB Provisioning</strong> tab to reset your keys.</p>
+          </div>
+        </div>
       </section>
 
       <section id="dashboard-main" class="step step-hidden">
@@ -56,8 +81,11 @@
     `;
 
     const btnConnect = document.getElementById('btn-ble-connect');
+    const btnNoFob = document.getElementById('btn-no-fob');
+    const btnTutorialBack = document.getElementById('btn-tutorial-back');
     const status = document.getElementById('ble-status');
     const secConnect = document.getElementById('dashboard-connect');
+    const secTutorial = document.getElementById('dashboard-tutorial');
     const secMain = document.getElementById('dashboard-main');
     const secAddPhone = document.getElementById('dashboard-add-phone');
     const secShowQR = document.getElementById('dashboard-show-qr');
@@ -141,6 +169,20 @@
       if (!bleManager) return;
       await bleManager.sendCommand("SLOTS?");
     }
+
+    btnNoFob.addEventListener('click', () => {
+      secConnect.classList.remove('step-visible');
+      secConnect.classList.add('step-hidden');
+      secTutorial.classList.remove('step-hidden');
+      secTutorial.classList.add('step-visible');
+    });
+
+    btnTutorialBack.addEventListener('click', () => {
+      secTutorial.classList.remove('step-visible');
+      secTutorial.classList.add('step-hidden');
+      secConnect.classList.remove('step-hidden');
+      secConnect.classList.add('step-visible');
+    });
 
     btnConnect.addEventListener('click', async () => {
       try {

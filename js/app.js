@@ -3,18 +3,19 @@
  */
 
 (function() {
-  const { 
-    CONFIG, 
-    generateKey, 
-    buildProvLine, 
-    isSupported, 
-    requestPort, 
-    SerialConnection, 
-    waitForBooted, 
-    initFirmwareTab 
+  const {
+    CONFIG,
+    DEMO_MODE,
+    generateKey,
+    buildProvLine,
+    isSupported,
+    requestPort,
+    SerialConnection,
+    waitForBooted,
+    initFirmwareTab
   } = window.Whimbrel;
 
-  let currentKey = null;
+  let currentKeys = null; // { fobKey, phoneKey, pin, qrUrl }
   let fobFlashed = false;
   let receiverFlashed = false;
 
@@ -35,9 +36,15 @@
       fobStatus: document.getElementById("fob-status"),
       receiverStatus: document.getElementById("receiver-status"),
       notes: document.getElementById("notes"),
+      
+      // Steps
       secGen: document.getElementById("generate"),
-      secFob: document.getElementById("flash-fob"),
       secRx: document.getElementById("flash-receiver"),
+      secFob: document.getElementById("flash-fob"),
+      secAddPhonePrompt: document.getElementById("add-phone-prompt"),
+      secAddPhonePin: document.getElementById("add-phone-pin"),
+      secShowQR: document.getElementById("show-qr"),
+      
       timeoutIndicator: document.getElementById("timeout-indicator"),
       progressCircle: document.querySelector("#timeout-indicator .progress-ring-circle"),
       stepper: document.getElementById("stepper"),
@@ -45,8 +52,17 @@
       stepCircles: [
         document.getElementById("step-circle-1"),
         document.getElementById("step-circle-2"),
-        document.getElementById("step-circle-3")
-      ]
+        document.getElementById("step-circle-3"),
+        document.getElementById("step-circle-4")
+      ],
+      
+      // New flow elements
+      btnAddPhoneYes: document.getElementById("btn-add-phone-yes"),
+      btnAddPhoneNo: document.getElementById("btn-add-phone-no"),
+      pinCircles: document.querySelectorAll(".pin-circle"),
+      hiddenPinInput: document.getElementById("hidden-pin-input"),
+      pinStatus: document.getElementById("pin-status"),
+      btnQrDone: document.getElementById("btn-qr-done")
     };
 
     if (!el.mainPanel) return;
@@ -154,6 +170,14 @@
       history.replaceState({ tab: "firmware", fwStep: 0 }, "", "#firmware-step1");
     } catch (e) {}
 
+    // Maps step index to the UI sections to show
+    // 0: Generate
+    // 1: Flash Receiver
+    // 2: Flash Fob
+    // 3: Add Phone Prompt
+    // 4: Add Phone PIN
+    // 5: Show QR
+    // 6: Notes (All done)
     async function showStep(stepIndex, pushStateFlag = true) {
       if (currentStepIdx === stepIndex) return;
 
@@ -163,22 +187,36 @@
         } catch (e) {}
       }
 
-      const visibleEls = [el.secGen, el.secFob, el.secRx, el.navHeader, el.notes].filter((e) =>
-        e && e.classList.contains("step-visible")
-      );
+      const allSecs = [
+        el.secGen, el.secRx, el.secFob, el.secAddPhonePrompt,
+        el.secAddPhonePin, el.secShowQR, el.notes, el.navHeader
+      ];
+
+      const visibleEls = allSecs.filter((e) => e && e.classList.contains("step-visible"));
       visibleEls.forEach((e) => e.classList.add("step-fading-out"));
       await abortableDelay(200);
 
       animateHeightChange(() => {
         currentStepIdx = stepIndex;
+        
+        // Map stepIndex to circle indices (0 to 3)
+        // 0 -> circle 0
+        // 1 -> circle 1
+        // 2 -> circle 2
+        // 3, 4, 5 -> circle 3
+        // 6 -> circles hidden
+        let circleIdx = stepIndex;
+        if (stepIndex >= 3 && stepIndex <= 5) circleIdx = 3;
+        if (stepIndex === 6) circleIdx = -1; // Done
+
         el.stepCircles.forEach((c, idx) => {
           if (c) {
-            if (idx === Math.min(stepIndex, 2)) c.classList.add("active");
+            if (idx <= circleIdx) c.classList.add("active");
             else c.classList.remove("active");
           }
         });
 
-        [el.secGen, el.secFob, el.secRx, el.navHeader, el.notes].forEach((e) => {
+        allSecs.forEach((e) => {
           if (e) {
             e.classList.remove("step-visible", "step-fading-out");
             e.classList.add("step-hidden");
@@ -200,18 +238,6 @@
             el.keyPreviewDots.style.filter = "blur(4px)";
           }
         } else if (stepIndex === 1) {
-          if (el.stepper) el.stepper.classList.remove("step-fading-out", "step-hidden");
-          if (el.stepper) el.stepper.classList.add("step-visible");
-          if (el.navHeader) {
-            el.navHeader.classList.remove("step-hidden");
-            el.navHeader.classList.add("step-visible");
-          }
-          if (el.secFob) {
-            el.secFob.classList.remove("step-hidden");
-            el.secFob.classList.add("step-visible");
-          }
-        } else if (stepIndex === 2) {
-          if (el.stepper) el.stepper.classList.remove("step-fading-out", "step-hidden");
           if (el.stepper) el.stepper.classList.add("step-visible");
           if (el.navHeader) {
             el.navHeader.classList.remove("step-hidden");
@@ -221,7 +247,50 @@
             el.secRx.classList.remove("step-hidden");
             el.secRx.classList.add("step-visible");
           }
+        } else if (stepIndex === 2) {
+          if (el.stepper) el.stepper.classList.add("step-visible");
+          if (el.navHeader) {
+            el.navHeader.classList.remove("step-hidden");
+            el.navHeader.classList.add("step-visible");
+          }
+          if (el.secFob) {
+            el.secFob.classList.remove("step-hidden");
+            el.secFob.classList.add("step-visible");
+          }
         } else if (stepIndex === 3) {
+          if (el.stepper) el.stepper.classList.add("step-visible");
+          if (el.navHeader) {
+            el.navHeader.classList.remove("step-hidden");
+            el.navHeader.classList.add("step-visible");
+          }
+          if (el.secAddPhonePrompt) {
+            el.secAddPhonePrompt.classList.remove("step-hidden");
+            el.secAddPhonePrompt.classList.add("step-visible");
+          }
+        } else if (stepIndex === 4) {
+          if (el.stepper) el.stepper.classList.add("step-visible");
+          if (el.navHeader) {
+            el.navHeader.classList.remove("step-hidden");
+            el.navHeader.classList.add("step-visible");
+          }
+          if (el.secAddPhonePin) {
+            el.secAddPhonePin.classList.remove("step-hidden");
+            el.secAddPhonePin.classList.add("step-visible");
+            el.hiddenPinInput.value = '';
+            updatePinUI('');
+            el.hiddenPinInput.focus();
+          }
+        } else if (stepIndex === 5) {
+          if (el.stepper) el.stepper.classList.add("step-visible");
+          if (el.navHeader) {
+            el.navHeader.classList.remove("step-hidden");
+            el.navHeader.classList.add("step-visible");
+          }
+          if (el.secShowQR) {
+            el.secShowQR.classList.remove("step-hidden");
+            el.secShowQR.classList.add("step-visible");
+          }
+        } else if (stepIndex === 6) {
           if (el.stepper) el.stepper.classList.remove("step-visible", "step-fading-out");
           if (el.stepper) el.stepper.classList.add("step-hidden");
           if (el.notes) {
@@ -304,12 +373,11 @@
       return;
     }
 
-    function setKey(key) {
-      currentKey = key;
-      if (el.btnFlashFob) el.btnFlashFob.disabled = !key;
-      if (el.btnFlashReceiver) el.btnFlashReceiver.disabled = !key;
+    function setKeys(keysObj) {
+      currentKeys = keysObj;
+      if (el.btnFlashFob) el.btnFlashFob.disabled = !keysObj;
+      if (el.btnFlashReceiver) el.btnFlashReceiver.disabled = !keysObj;
     }
-    setKey(currentKey);
 
     if (el.btnBack) {
       el.btnBack.addEventListener("click", () => {
@@ -359,7 +427,7 @@
     }
 
     async function provisionDevice(deviceId, setStatus, expectedBooted) {
-      if (!currentKey) {
+      if (!currentKeys) {
         setStatus("Generate a secret first.", true);
         return;
       }
@@ -369,6 +437,37 @@
       }
       keysProvisioningInProgress = true;
       keysProvisionAborted = false;
+      if (DEMO_MODE) {
+        try {
+          setStatus("Writing key…");
+          await abortableDelay(600, () => keysProvisionAborted);
+          if (keysProvisionAborted) { setStatus(""); return; }
+          setStatus("Waiting for device to boot…");
+          await abortableDelay(900, () => keysProvisionAborted);
+          if (keysProvisionAborted) { setStatus(""); return; }
+          setStatus("Done. Device provisioned and running.");
+          if (deviceId === CONFIG.DEVICE_ID_RX) {
+            receiverFlashed = true;
+            keysProvisioningInPostCircle = true;
+            await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
+            keysProvisioningInPostCircle = false;
+            if (!keysProvisionAborted) showStep(2);
+          }
+          if (deviceId === CONFIG.DEVICE_ID_FOB) {
+            fobFlashed = true;
+            keysProvisioningInPostCircle = true;
+            await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
+            keysProvisioningInPostCircle = false;
+            if (!keysProvisionAborted) showStep(3); // Go to Add Phone Prompt
+          }
+        } catch (e) {
+          if (!keysProvisionAborted) setStatus(e.message || "Demo error", true);
+        } finally {
+          keysProvisioningInProgress = false;
+        }
+        return;
+      }
+      
       let serialConn = null;
       try {
         const port = await requestPort();
@@ -378,18 +477,20 @@
         await serialConn.open(port);
 
         setStatus("Writing key…");
-        const line = buildProvLine(currentKey);
+        
+        const line = buildProvLine(0, currentKeys.fobKey, CONFIG.RESET_COUNTER, deviceId === CONFIG.DEVICE_ID_FOB ? "Uguisu" : "Owner");
         await serialConn.sendLine(line);
         const response = await serialConn.readLineWithTimeout(CONFIG.TIMEOUT_PROV_MS);
+
         if (keysProvisionAborted) {
           setStatus("");
           return;
         }
         if (response !== "ACK:PROV_SUCCESS") {
           if (response.startsWith("ERR:")) {
-            setStatus(`Step 1 (write & verify) failed: ${response}`, true);
+            setStatus(`Step failed: ${response}`, true);
           } else {
-            setStatus(`Step 1 (write & verify) failed: unexpected response: ${response}`, true);
+            setStatus(`Step failed: unexpected response: ${response}`, true);
           }
           return;
         }
@@ -402,18 +503,21 @@
         }
 
         setStatus("Done. Device provisioned and running.");
+        
+        if (deviceId === CONFIG.DEVICE_ID_RX) {
+          receiverFlashed = true;
+          keysProvisioningInPostCircle = true;
+          await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
+          keysProvisioningInPostCircle = false;
+          if (!keysProvisionAborted) showStep(2); // next is fob
+        }
+        
         if (deviceId === CONFIG.DEVICE_ID_FOB) {
           fobFlashed = true;
           keysProvisioningInPostCircle = true;
           await runTimeout(el.timeoutIndicator, el.progressCircle, 1500, () => keysProvisionAborted);
           keysProvisioningInPostCircle = false;
-          if (!keysProvisionAborted) showStep(2);
-        }
-        if (deviceId === CONFIG.DEVICE_ID_RX) receiverFlashed = true;
-
-        if (fobFlashed && receiverFlashed && currentStepIdx === 2) {
-          await showStep(3);
-          triggerConfetti();
+          if (!keysProvisionAborted) showStep(3); // next is add phone prompt
         }
       } catch (e) {
         if (!keysProvisionAborted) {
@@ -451,7 +555,7 @@
       }, 200);
     }
 
-    async function animateKeyGeneration(finalKey) {
+    async function animateKeyGeneration(keysObj) {
       keysGenerationInProgress = true;
       keysGenerationAborted = false;
       try {
@@ -511,7 +615,7 @@
           el.keyPreview.style.filter = "blur(4px)";
         }
 
-        setKey(finalKey);
+        setKeys(keysObj);
         if (el.keyPreviewDots) {
           el.keyPreviewDots.style.opacity = "1";
           el.keyPreviewDots.style.filter = "blur(0px)";
@@ -530,7 +634,7 @@
           cancelKeyGenerationUI();
           return;
         }
-        showStep(1);
+        showStep(1); // Receiver is step 1
       } finally {
         keysGenerationInProgress = false;
       }
@@ -538,7 +642,7 @@
 
     function resetKeysUI() {
       keysGenerationAborted = true;
-      currentKey = null;
+      currentKeys = null;
       fobFlashed = false;
       receiverFlashed = false;
       if (el.keyStatus) {
@@ -594,9 +698,11 @@
           }
         });
 
-        let key;
+        let keysObj = null;
         try {
-          key = generateKey();
+          // Just generate fobKey for now, phone key is generated later if they want it
+          const fobKeyHex = generateKey();
+          keysObj = { fobKey: fobKeyHex };
         } catch (e) {
           console.error("Key generation error:", e);
           animateHeightChange(() => {
@@ -604,9 +710,6 @@
               el.keyStatus.textContent = "Error generating key.";
               el.keyStatus.className = "status error";
             }
-            if (el.btnGenerate) el.btnGenerate.style.display = "block";
-            if (el.step1Title) el.step1Title.textContent = "Generate New Key";
-            if (el.keyPreviewContainer) el.keyPreviewContainer.style.display = "none";
           });
           return;
         }
@@ -614,10 +717,6 @@
         animateHeightChange(() => {
           fobFlashed = false;
           receiverFlashed = false;
-          if (el.notes) {
-            el.notes.classList.remove("step-visible");
-            el.notes.classList.add("step-hidden");
-          }
           if (el.fobStatus) {
             el.fobStatus.textContent = "";
             el.fobStatus.className = "status";
@@ -634,7 +733,14 @@
           if (rd) rd.style.display = "block";
         });
 
-        await animateKeyGeneration(key);
+        await animateKeyGeneration(keysObj);
+      });
+    }
+
+    if (el.btnFlashReceiver) {
+      el.btnFlashReceiver.addEventListener("click", async () => {
+        setReceiverStatus("Select port…");
+        await provisionDevice(CONFIG.DEVICE_ID_RX, setReceiverStatus, CONFIG.BOOTED_RX);
       });
     }
 
@@ -645,10 +751,150 @@
       });
     }
 
-    if (el.btnFlashReceiver) {
-      el.btnFlashReceiver.addEventListener("click", async () => {
-        setReceiverStatus("Select port…");
-        await provisionDevice(CONFIG.DEVICE_ID_RX, setReceiverStatus, CONFIG.BOOTED_RX);
+    // --- ADD PHONE KEY FLOW (BLE) ---
+    
+    if (el.btnAddPhoneNo) {
+      el.btnAddPhoneNo.addEventListener("click", () => {
+        showStep(6); // All done
+        triggerConfetti();
+      });
+    }
+
+    if (el.btnAddPhoneYes) {
+      el.btnAddPhoneYes.addEventListener("click", () => {
+        showStep(4); // Add phone pin
+      });
+    }
+
+    function updatePinUI(val) {
+      for (let i = 0; i < 6; i++) {
+        if (i < val.length) {
+          el.pinCircles[i].classList.add("filled");
+        } else {
+          el.pinCircles[i].classList.remove("filled");
+        }
+      }
+    }
+
+    async function processPinAndProvision(pin) {
+      if (el.pinStatus) {
+        el.pinStatus.textContent = "Connecting via BLE...";
+        el.pinStatus.className = "status";
+      }
+
+      try {
+        let bleManager = new window.Whimbrel.BLEManager();
+        await bleManager.connect();
+        
+        if (el.pinStatus) {
+          el.pinStatus.textContent = "Generating secure keys...";
+        }
+
+        const phoneKeyHex = generateKey();
+        const salt = new Uint8Array(16);
+        crypto.getRandomValues(salt);
+        const saltHex = window.Whimbrel.bufToHex(salt);
+        
+        const hash = await argon2.hash({
+          pass: pin,
+          salt: salt,
+          time: 3,
+          mem: 262144, // 256MB
+          hashLen: 16,
+          parallelism: 1,
+          type: argon2.ArgonType.Argon2id
+        });
+        
+        const derivedKey = hash.hash;
+        const phoneKeyBuf = window.Whimbrel.hexToBuf(phoneKeyHex);
+        
+        const nonce = salt.slice(0, 13);
+        const encrypted = window.Whimbrel.encryptAESCCM(derivedKey, nonce, phoneKeyBuf);
+        const ekeyHex = window.Whimbrel.bufToHex(encrypted);
+        
+        const qrUrl = `immogen://prov?slot=1&salt=${saltHex}&ekey=${ekeyHex}&ctr=0&name=`; // Empty name
+
+        if (el.pinStatus) {
+          el.pinStatus.textContent = "Provisioning to Guillemot...";
+        }
+
+        await bleManager.sendCommand(`SETPIN:${pin}`);
+        await abortableDelay(100); // small delay to process
+        await bleManager.sendCommand(`PROV:1:${phoneKeyHex}:0:`);
+
+        await abortableDelay(500);
+        bleManager.disconnect();
+
+        // Render QR
+        const qrCanvas = document.getElementById("qr-canvas");
+        QRCode.toCanvas(qrCanvas, qrUrl, { width: 300, margin: 2 }, function (error) {
+          if (error) throw error;
+          showStep(5); // Show QR
+        });
+
+      } catch (e) {
+        console.error(e);
+        if (el.pinStatus) {
+          el.pinStatus.textContent = "Error: " + e.message;
+          el.pinStatus.className = "status error";
+        }
+      }
+    }
+
+    // Keyboard listener for PIN
+    document.addEventListener("keydown", (e) => {
+      // Only process if we are on step 4
+      if (currentStepIdx !== 4) return;
+      if (!el.secAddPhonePin || !el.secAddPhonePin.classList.contains("step-visible")) return;
+
+      const input = el.hiddenPinInput;
+      let val = input.value;
+
+      if (e.key === "Backspace") {
+        val = val.slice(0, -1);
+      } else if (/^[0-9]$/.test(e.key) && val.length < 6) {
+        val += e.key;
+      }
+      
+      input.value = val;
+      updatePinUI(val);
+
+      if (val.length === 6) {
+        // Blur to stop keyboard on mobile
+        input.blur();
+        processPinAndProvision(val);
+      }
+    });
+    
+    // Focus the hidden input if user taps the circles area
+    if (el.secAddPhonePin) {
+      el.secAddPhonePin.addEventListener("click", () => {
+        el.hiddenPinInput.focus();
+      });
+    }
+
+    if (el.btnQrDone) {
+      el.btnQrDone.addEventListener("click", () => {
+        showStep(6);
+        triggerConfetti();
+      });
+    }
+
+    // Dashboard Modal Logic
+    const btnManageKeys = document.getElementById("btn-manage-keys");
+    const dashboardOverlay = document.getElementById("dashboard-overlay");
+    const btnDashboardClose = document.getElementById("btn-dashboard-close");
+
+    if (btnManageKeys && dashboardOverlay) {
+      btnManageKeys.addEventListener("click", () => {
+        dashboardOverlay.classList.add("visible");
+        if (window.Whimbrel.initDashboard) {
+          window.Whimbrel.initDashboard(); // refresh dashboard
+        }
+      });
+
+      btnDashboardClose.addEventListener("click", () => {
+        dashboardOverlay.classList.remove("visible");
       });
     }
 

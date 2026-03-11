@@ -26,9 +26,8 @@
     return (crc & 0xffff).toString(16).padStart(4, "0").toLowerCase();
   };
 
-  window.Whimbrel.buildProvLine = function(keyHex) {
+  window.Whimbrel.buildProvLine = function(slot, keyHex, ctr, name = "") {
     if (!keyHex || keyHex.length !== 32) throw new Error("Invalid key");
-    const checksum = window.Whimbrel.crc16Key(keyHex);
-    return `PROV:${keyHex}:${CONFIG.RESET_COUNTER}:${checksum}`;
+    return `PROV:${slot}:${keyHex}:${ctr}:${name}`;
   };
 })();

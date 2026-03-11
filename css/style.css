@@ -235,6 +235,17 @@ header a:hover {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
+.btn-secondary {
+  background-color: transparent !important;
+  border: 2px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
 .btn-next {
   margin-top: 24px !important;
   background-color: var(--success);
@@ -775,3 +786,36 @@ header a:hover {
   background: var(--accent-hover);
 }
 
+/* PIN Entry Circles */
+.pin-circles {
+  cursor: text;
+}
+.pin-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background-color: transparent;
+  transition: background-color 0.1s ease;
+}
+.pin-circle.filled {
+  background-color: var(--accent);
+}
+
+/* Dashboard Overlay */
+.dashboard-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--surface);
+  z-index: 100;
+  padding: 32px;
+  border-radius: var(--radius);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.dashboard-content {
+  margin-top: 40px;
+}

@@ -6,7 +6,55 @@
   <meta name="description" content="Whimbrel — provision Uguisu (key fob) and Guillemot (receiver) for the Ninebot G30 BLE immobilizer.">
   <title>Whimbrel — Provisioning</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
+  <style>
+    /* Dashboard Overlay */
+    .dashboard-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: rgba(0, 0, 0, 0.6) !important;
+      z-index: 1000 !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      border-radius: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .dashboard-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .dashboard-modal {
+      position: relative !important;
+      background: var(--surface) !important;
+      width: 90% !important;
+      max-width: 540px !important;
+      max-height: 90vh !important;
+      border-radius: var(--radius) !important;
+      padding: 32px !important;
+      box-shadow: var(--shadow) !important;
+      overflow-y: auto !important;
+      box-sizing: border-box !important;
+      border: 1px solid var(--border);
+      transform: scale(0.95) translateY(10px);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .dashboard-overlay.visible .dashboard-modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .dashboard-content {
+      margin-top: 10px !important;
+    }
+  </style>
   <script>
     (function() {
       try {
@@ -30,7 +78,7 @@
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
         Visit the GitHub Page &gt;
       </a>
-      <p class="tagline">Companion Web App for <a href="https://github.com/LPFchan/Immogen" target="_blank">Immogen</a> <span class="demo-badge" id="demo-badge" aria-hidden="true">Demo</span></p>
+      <p class="tagline">Companion Web App for <a href="https://github.com/LPFchan/Immogen" target="_blank">Immogen</a></p>
     </header>
 
     <div id="unsupported-msg" class="unsupported-msg" style="display: none;">
@@ -42,6 +90,15 @@
     <div class="tabs" id="main-tabs">
       <button class="tab-btn active" data-tab="tab-firmware"><span>Firmware</span></button>
       <button class="tab-btn" data-tab="tab-keys"><span>Keys</span></button>
+    </div>
+
+    <!-- Dashboard Overlay -->
+    <div id="dashboard-overlay" class="dashboard-overlay">
+      <div class="dashboard-modal">
+        <div id="dashboard-content" class="dashboard-content" style="margin-top: 0 !important;">
+          <!-- populated by dashboard.js -->
+        </div>
+      </div>
     </div>
 
     <main id="main-panel" class="main-panel">
@@ -59,6 +116,8 @@
         <div class="step-circle" id="step-circle-2">2</div>
         <div class="step-line"></div>
         <div class="step-circle" id="step-circle-3">3</div>
+        <div class="step-line"></div>
+        <div class="step-circle" id="step-circle-4">4</div>
         <div id="timeout-indicator" class="timeout-indicator">
           <svg class="progress-ring" width="20" height="20">
             <circle class="progress-ring-bg" cx="10" cy="10" r="8"></circle>
@@ -77,6 +136,13 @@
         </div>
       </section>
 
+      <section id="flash-receiver" class="step step-hidden">
+        <h2>Flash Receiver</h2>
+        <p id="receiver-desc">Plug the receiver in via USB-C<br>Select the serial port when prompted.</p>
+        <div id="receiver-status" class="status" aria-live="polite" style="display: none;"></div>
+        <button id="btn-flash-receiver" type="button" class="btn-huge">Flash</button>
+      </section>
+
       <section id="flash-fob" class="step step-hidden">
         <h2>Flash Key Fob</h2>
         <p id="fob-desc">Plug the fob in via USB-C<br>Select the serial port when prompted.</p>
@@ -84,11 +150,38 @@
         <button id="btn-flash-fob" type="button" class="btn-huge">Flash</button>
       </section>
 
-      <section id="flash-receiver" class="step step-hidden">
-        <h2>Flash Receiver</h2>
-        <p id="receiver-desc">Plug the receiver in via USB-C<br>Select the serial port when prompted.</p>
-        <div id="receiver-status" class="status" aria-live="polite" style="display: none;"></div>
-        <button id="btn-flash-receiver" type="button" class="btn-huge">Flash</button>
+      <section id="add-phone-prompt" class="step step-hidden">
+        <h2>Add a Phone Key?</h2>
+        <p style="margin-bottom: 20px;">Would you like to setup a Phone Key now? You can always do this later.</p>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+          <button id="btn-add-phone-yes" type="button" class="btn-huge">Yes</button>
+          <button id="btn-add-phone-no" type="button" class="btn-huge btn-secondary" style="background-color: transparent; border: 1px solid #555;">Skip for now</button>
+        </div>
+      </section>
+
+      <section id="add-phone-pin" class="step step-hidden">
+        <h2>Create PIN</h2>
+        <p>Press the button on your Uguisu fob to authorize setup.</p>
+        <p style="font-size: 0.9rem; color: #888;">Then, enter a 6-digit PIN below.</p>
+        
+        <div class="pin-circles" id="pin-circles" style="display: flex; gap: 10px; justify-content: center; margin: 25px 0;">
+          <div class="pin-circle"></div><div class="pin-circle"></div><div class="pin-circle"></div>
+          <div class="pin-circle"></div><div class="pin-circle"></div><div class="pin-circle"></div>
+        </div>
+        
+        <div id="pin-status" class="status" aria-live="polite"></div>
+        
+        <!-- hidden input to capture keystrokes easily on mobile if needed, though keyboard events work best -->
+        <input type="tel" id="hidden-pin-input" maxlength="6" style="position: absolute; opacity: 0; pointer-events: none;">
+      </section>
+
+      <section id="show-qr" class="step step-hidden">
+        <h2>Scan QR Code</h2>
+        <p>Scan this code with the Pipit app to add your phone key.</p>
+        <div id="qr-container" style="text-align: center; margin: 20px 0;">
+          <canvas id="qr-canvas"></canvas>
+        </div>
+        <button id="btn-qr-done" type="button" class="btn-huge">Done</button>
       </section>
 
       <section id="notes" class="step notes step-hidden">
@@ -176,6 +269,11 @@
         <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
         <span id="theme-text">Dark Mode</span>
       </button>
+      
+      <button id="btn-manage-keys" class="theme-toggle-footer" aria-label="Manage Keys" style="margin-left: 15px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        <span>Manage Keys</span>
+      </button>
     </footer>
   </div>
 
@@ -223,15 +321,20 @@
       });
     });
   </script>
-  <script>window.WHIMBREL_DEMO = true;</script>
+  <script src="https://cdn.jsdelivr.net/npm/aes-js@3.1.2/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-bundled.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/crypto.js"></script>
+  <script src="js/ccm.js"></script>
   <script src="js/serial.js"></script>
+  <script src="js/ble.js"></script>
   <script src="js/prov.js"></script>
   <script src="js/api.js"></script>
   <script src="js/firmware-manager.js"></script>
   <script src="js/dfu.js"></script>
   <script src="js/firmware.js"></script>
+  <script src="js/dashboard.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -74,6 +74,7 @@
     let keysGenerationInProgress = false;
     let keysGenerationAborted = false;
     let heightAnimTimeout = null;
+    let appPinValue = '';
 
     function animateHeightChange(callback) {
       if (heightAnimTimeout) {
@@ -276,6 +277,7 @@
           if (el.secAddPhonePin) {
             el.secAddPhonePin.classList.remove("step-hidden");
             el.secAddPhonePin.classList.add("step-visible");
+            appPinValue = '';
             el.hiddenPinInput.value = '';
             updatePinUI('');
             el.hiddenPinInput.focus();
@@ -634,7 +636,7 @@
           cancelKeyGenerationUI();
           return;
         }
-        showStep(1); // Receiver is step 1
+        showStep(1); // Normal flow: flash receiver
       } finally {
         keysGenerationInProgress = false;
       }
@@ -762,7 +764,14 @@
 
     if (el.btnAddPhoneYes) {
       el.btnAddPhoneYes.addEventListener("click", () => {
-        showStep(4); // Add phone pin
+        // Open the dashboard overlay at ds-tutorial; when provisioning is done
+        // the callback advances the main flow to "All done" + confetti.
+        if (window.Whimbrel.openForProvisioning) {
+          window.Whimbrel.openForProvisioning(() => {
+            showStep(6);
+            triggerConfetti();
+          });
+        }
       });
     }
 
@@ -777,60 +786,39 @@
     }
 
     async function processPinAndProvision(pin) {
-      if (el.pinStatus) {
-        el.pinStatus.textContent = "Connecting via BLE...";
-        el.pinStatus.className = "status";
-      }
-
       try {
-        let bleManager = new window.Whimbrel.BLEManager();
-        await bleManager.connect();
-        
+        let bleManager;
+        if (DEMO_MODE) {
+          bleManager = {
+            sendCommand: async () => { await new Promise(r => setTimeout(r, 100)); },
+            disconnect: () => {}
+          };
+        } else {
+          bleManager = new window.Whimbrel.BLEManager();
+          await bleManager.connect();
+        }
+
         if (el.pinStatus) {
           el.pinStatus.textContent = "Generating secure keys...";
         }
 
-        const phoneKeyHex = generateKey();
-        const salt = new Uint8Array(16);
-        crypto.getRandomValues(salt);
-        const saltHex = window.Whimbrel.bufToHex(salt);
-        
-        const hash = await argon2.hash({
-          pass: pin,
-          salt: salt,
-          time: 3,
-          mem: 262144, // 256MB
-          hashLen: 16,
-          parallelism: 1,
-          type: argon2.ArgonType.Argon2id
+        if (el.pinStatus) el.pinStatus.textContent = "Generating secure keys...";
+
+        // Crypto + BLE handled by the shared provisionPhone helper in prov.js.
+        // The main flow always provisions slot 1 and sets the PIN for the first time.
+        const { qrUrl } = await window.Whimbrel.provisionPhone({
+          pin, slotId: 1, doSetPin: true, bleManager
         });
-        
-        const derivedKey = hash.hash;
-        const phoneKeyBuf = window.Whimbrel.hexToBuf(phoneKeyHex);
-        
-        const nonce = salt.slice(0, 13);
-        const encrypted = window.Whimbrel.encryptAESCCM(derivedKey, nonce, phoneKeyBuf);
-        const ekeyHex = window.Whimbrel.bufToHex(encrypted);
-        
-        const qrUrl = `immogen://prov?slot=1&salt=${saltHex}&ekey=${ekeyHex}&ctr=0&name=`; // Empty name
 
-        if (el.pinStatus) {
-          el.pinStatus.textContent = "Provisioning to Guillemot...";
-        }
-
-        await bleManager.sendCommand(`SETPIN:${pin}`);
-        await abortableDelay(100); // small delay to process
-        await bleManager.sendCommand(`PROV:1:${phoneKeyHex}:0:`);
-
+        if (el.pinStatus) el.pinStatus.textContent = "Provisioning to Guillemot...";
         await abortableDelay(500);
         bleManager.disconnect();
 
         // Render QR
-        const qrCanvas = document.getElementById("qr-canvas");
-        QRCode.toCanvas(qrCanvas, qrUrl, { width: 300, margin: 2 }, function (error) {
-          if (error) throw error;
-          showStep(5); // Show QR
-        });
+        const qrImg = document.getElementById("qr-img");
+        const qr = new QRious({ value: qrUrl, size: 300 });
+        qrImg.src = qr.toDataURL('image/png');
+        showStep(5); // Show QR
 
       } catch (e) {
         console.error(e);
@@ -846,23 +834,26 @@
       // Only process if we are on step 4
       if (currentStepIdx !== 4) return;
       if (!el.secAddPhonePin || !el.secAddPhonePin.classList.contains("step-visible")) return;
-
-      const input = el.hiddenPinInput;
-      let val = input.value;
+      // Yield to the dashboard overlay if it is open — its own handler owns the input there
+      const dashOverlay = document.getElementById("dashboard-overlay");
+      if (dashOverlay && dashOverlay.classList.contains("visible")) return;
 
       if (e.key === "Backspace") {
-        val = val.slice(0, -1);
-      } else if (/^[0-9]$/.test(e.key) && val.length < 6) {
-        val += e.key;
+        appPinValue = appPinValue.slice(0, -1);
+      } else if (/^[0-9]$/.test(e.key) && appPinValue.length < 6) {
+        appPinValue += e.key;
+      } else {
+        return;
       }
-      
-      input.value = val;
-      updatePinUI(val);
 
-      if (val.length === 6) {
-        // Blur to stop keyboard on mobile
-        input.blur();
-        processPinAndProvision(val);
+      e.preventDefault();
+      el.hiddenPinInput.value = appPinValue;
+      updatePinUI(appPinValue);
+
+      if (appPinValue.length === 6) {
+        el.hiddenPinInput.blur();
+        // Defer processing so the 6th circle paints before the async work starts
+        setTimeout(() => processPinAndProvision(appPinValue), 0);
       }
     });
     
@@ -930,7 +921,9 @@
         }
         if (btn.dataset.tab === "tab-keys") {
           try {
-            history.replaceState(
+            // Push (not replace) so that back from step 1 correctly returns to
+            // step 0 rather than jumping out to the firmware tab.
+            history.pushState(
               { tab: "keys", step: currentStepIdx },
               "",
               `#step${currentStepIdx + 1}`

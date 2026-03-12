@@ -90,8 +90,8 @@
     </div>
 
     <div class="tabs" id="main-tabs">
-      <button class="tab-btn" data-tab="tab-firmware"><span>Firmware</span></button>
-      <button class="tab-btn active" data-tab="tab-keys"><span>Keys</span></button>
+      <button class="tab-btn active" data-tab="tab-firmware"><span>Firmware</span></button>
+      <button class="tab-btn" data-tab="tab-keys"><span>Keys</span></button>
     </div>
 
     <!-- Dashboard Overlay -->
@@ -105,7 +105,7 @@
 
     <main id="main-panel" class="main-panel">
       <!-- Keys Tab Content -->
-      <div id="tab-keys" class="tab-content active" style="display: block;">
+      <div id="tab-keys" class="tab-content" style="display: none;">
         <div id="stepper" class="stepper">
         <div id="nav-header" class="nav-header step-hidden">
           <button id="btn-back" class="btn-back" type="button" aria-label="Go back">
@@ -154,17 +154,15 @@
 
       <section id="add-phone-prompt" class="step step-hidden">
         <h2>Add a Phone Key?</h2>
-        <p style="margin-bottom: 20px;">Would you like to setup a Phone Key now? You can always do this later.</p>
-        <div style="display: flex; gap: 15px; justify-content: center;">
-          <button id="btn-add-phone-yes" type="button" class="btn-huge">Yes</button>
-          <button id="btn-add-phone-no" type="button" class="btn-huge btn-secondary" style="background-color: transparent; border: 1px solid #555;">Skip for now</button>
-        </div>
+        <p style="margin-bottom: 20px;">You can set up a phone key using the Pipit app.</p>
+        <button id="btn-add-phone-yes" type="button" class="btn-huge">Yes</button>
+        <button id="btn-add-phone-no" type="button" style="display:block; background:none; border:none; color:var(--muted); font-family:inherit; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:underline; margin-top:16px; width:100%; text-align:center;">Skip for now</button>
       </section>
 
       <section id="add-phone-pin" class="step step-hidden">
         <h2>Create PIN</h2>
-        <p>Press the button on your Uguisu fob to authorize setup.</p>
-        <p style="font-size: 0.9rem; color: #888;">Then, enter a 6-digit PIN below.</p>
+        <p>Triple-press the button on your Uguisu fob to open the provisioning window.</p>
+        <p style="font-size: 0.9rem; color: #888;">Choose a 6-digit PIN and enter it below. <strong>Remember this PIN</strong> — you will need it to manage keys and access settings in the Pipit app.</p>
         
         <div class="pin-circles" id="pin-circles" style="display: flex; gap: 10px; justify-content: center; margin: 25px 0;">
           <div class="pin-circle"></div><div class="pin-circle"></div><div class="pin-circle"></div>
@@ -179,9 +177,9 @@
 
       <section id="show-qr" class="step step-hidden">
         <h2>Scan QR Code</h2>
-        <p>Scan this code with the Pipit app to add your phone key.</p>
+        <p>Scan this code with the Pipit app.</p>
         <div id="qr-container" style="text-align: center; margin: 20px 0;">
-          <canvas id="qr-canvas"></canvas>
+          <img id="qr-img" alt="QR Code" style="max-width: 300px; width: 100%;">
         </div>
         <button id="btn-qr-done" type="button" class="btn-huge">Done</button>
       </section>
@@ -193,7 +191,7 @@
       </div>
 
       <!-- Firmware Tab Content -->
-      <div id="tab-firmware" class="tab-content step" style="display: none;">
+      <div id="tab-firmware" class="tab-content step active" style="display: block;">
         <section id="fw-step-1" class="step step-visible">
           <div class="device-tiles">
             <button id="btn-fw-guillemot" type="button" class="btn-tile">
@@ -325,7 +323,7 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/aes-js@3.1.2/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-bundled.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>window.WHIMBREL_DEMO = true;</script>
   <script src="js/config.js"></script>
   <script src="js/crypto.js"></script>

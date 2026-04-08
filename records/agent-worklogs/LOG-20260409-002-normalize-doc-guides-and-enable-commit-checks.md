@@ -45,3 +45,12 @@ Merge repo-template's document-writing and commit-enforcement rules into Whimbre
 - Output: Whimbrel now has both local and remote commit provenance enforcement
 - Blockers: none
 - Next: summarize intentional divergences and remind contributors to keep hooks installed locally
+
+## Entry 2026-04-09 07-15-36 KST
+
+- Action: reduced `CLAUDE.md` to the repo-template shim so `AGENTS.md` remains the single tool-facing instruction surface
+- Files touched: `CLAUDE.md`, `records/agent-worklogs/LOG-20260409-002-normalize-doc-guides-and-enable-commit-checks.md`
+- Checks run: `sed -n '1,80p' CLAUDE.md`, `git diff --check`
+- Output: `CLAUDE.md` now mirrors the scaffold shim pattern and no longer duplicates repo-specific policy already enforced elsewhere
+- Blockers: none
+- Next: commit the shim change on `main`, merge it into `demo`, and push both branches

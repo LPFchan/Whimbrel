@@ -121,7 +121,7 @@ It may:
 - update `SPEC.md`, `STATUS.md`, and `PLANS.md`
 - create research memos
 - create decision records
-- append or create worklogs
+- append to ongoing worklogs and create new worklogs only when clarity requires a separate execution record
 - translate messenger intake into repo artifacts
 - escalate non-obvious product, architecture, workflow, or policy calls
 
@@ -183,9 +183,26 @@ One task may legitimately touch multiple layers. For example:
 - `INBOX.md` is an aggressive scratch disk. Purge entries once they are reflected elsewhere.
 - `research/` keeps curated findings only.
 - `records/decisions/` is append-only by new decision file.
-- `records/agent-worklogs/` is append-only by new log file or appended entries.
+- `records/agent-worklogs/` is append-only by appended entries or, when clarity requires it, a new log file.
 - `upstream-intake/` should preserve its own paired internal-record and operator-brief workflow if the subsystem is ever activated.
 - Truth docs should reflect the latest accepted state, not every intermediate thought.
+
+### Worklog Reuse Policy
+
+Do not create a new `LOG-*` just to satisfy provenance.
+
+Append to the latest relevant `LOG-*` when:
+
+- the same workstream, goal, or blocker is still in scope
+- the new work is part of the same execution thread
+- an additional entry preserves clarity
+
+Create a new `LOG-*` only when:
+
+- the work is a distinct new stream or bounded task
+- a new agent or subagent is doing materially separate execution
+- the prior log would become confusing, bloated, or misleading if reused
+- the new work deserves its own execution record for future retrieval
 
 ## Stable IDs
 
@@ -223,9 +240,15 @@ After this repo adopted the operating model, every normal commit should include 
 Rules:
 
 - `artifacts:` may list more than one stable ID, comma-separated.
-- A normal commit should always reference at least one stable ID.
+- A normal commit should always reference at least one relevant stable ID, newly created or updated.
 - Artifact-less commits should be treated as bootstrap or migration exceptions only.
 - The commit side and the repo-artifact side should reinforce the same provenance graph.
+
+Normal commits do not require a brand-new `LOG-*`.
+
+- Prefer appending to an existing relevant `LOG-*` when the same workstream is continuing.
+- Create a new `LOG-*` only when it improves clarity.
+- Commits may reference `LOG-*`, `DEC-*`, `RSH-*`, `UPS-*`, or another relevant artifact type as appropriate.
 
 ## Commit-Time Enforcement
 

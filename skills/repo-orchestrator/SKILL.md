@@ -67,6 +67,7 @@ Use this skill with:
    - `agent: <agent-id>`
    - `role: orchestrator|worker|subagent|operator`
    - `artifacts: <artifact-id>[, <artifact-id>...]`
+   - Prefer referencing and updating an existing relevant `LOG-*` before creating a new one.
 
 8. Do not invent an upstream-review workflow inside this repo.
    - If recurring upstream review becomes necessary later, escalate to add an explicit `upstream-intake/` subsystem instead.

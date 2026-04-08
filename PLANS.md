@@ -17,7 +17,7 @@ Do not put raw brainstorms or untriaged intake here.
 - Outcome: future Whimbrel work lands in the correct artifact layer and post-bootstrap commits carry the documented provenance trailers
 - Why this is accepted: the repo now has a defined operating model and should use it consistently
 - Expected value: less context loss, fewer ad hoc notes, and clearer repo history for future maintainers and agents
-- Preconditions: contributors follow `repo-operating-model.md` and the local orchestrator skill
+- Preconditions: contributors follow `REPO.md` and the local orchestrator skill
 - Earliest likely start: immediately after bootstrap adoption
 - Related ids: `DEC-20260409-001`, `LOG-20260409-001`
 
@@ -36,7 +36,7 @@ Do not put raw brainstorms or untriaged intake here.
 
 - Initiative: use `DEC-*`, `LOG-*`, and commit trailers on the next non-bootstrap repo changes
   - Why now: the operating model only helps if future work follows it immediately
-  - Dependencies: `DEC-20260409-001`, `repo-operating-model.md`
+  - Dependencies: `DEC-20260409-001`, `REPO.md`
   - Related ids: `DEC-20260409-001`, `LOG-20260409-001`
 - Initiative: review the architecture-research memo and decide whether to accept any refactor work
   - Why now: current risks are documented, but no runtime refactor direction has been approved yet

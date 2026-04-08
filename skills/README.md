@@ -2,7 +2,7 @@
 
 This directory is optional and procedural.
 
-Use it only in environments that support reusable workflows. These skills should help route work through Whimbrel's operating model; they should not duplicate the canonical rules from `repo-operating-model.md`.
+Use it only in environments that support reusable workflows. These skills should help route work through Whimbrel's operating model; they should not duplicate the canonical rules from `REPO.md`.
 
 ## What Lives Here
 

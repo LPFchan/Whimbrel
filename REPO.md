@@ -1,6 +1,6 @@
-# Whimbrel Repo Operating Model
+# Whimbrel Repo Contract
 
-This document is the canonical rules layer for Whimbrel's repo-native operating system.
+This document is the canonical repo contract for Whimbrel.
 
 ## Purpose
 
@@ -46,13 +46,13 @@ Some coding agents look for repo-root instruction files such as `AGENTS.md` or `
 When a repo using this model includes them:
 
 - they should act as entrypoints into the canonical rules, not competing policy documents
-- they should stay short enough that they do not drift from `repo-operating-model.md`
-- `CLAUDE.md` may import or reference `repo-operating-model.md` when the tool supports it
+- they should stay short enough that they do not drift from `REPO.md`
+- `CLAUDE.md` may import or reference `REPO.md` when the tool supports it
 - `SKILL.md` stays separate because it defines a bounded reusable procedure, not repo-wide policy
 
 Recommended split:
 
-- `repo-operating-model.md`
+- `REPO.md`
   - canonical rules
 - `AGENTS.md`
   - tool-facing summary plus read order

@@ -11,10 +11,11 @@ Treat `AGENTS.md` as a compatibility entrypoint for tools that look for repo-lev
 - `STATUS.md`
 - `PLANS.md`
 - `INBOX.md`
+- `skills/README.md`
 
-If the repo includes reusable workflows, then also read `skills/README.md` and the relevant `skills/<name>/SKILL.md`.
+Before running a repeatable repo workflow, read the relevant `skills/<name>/SKILL.md`. Treat skills as repo-native procedures even when the agent runtime does not auto-load them.
 
-When writing into an artifact directory, read that directory's `README.md` first. If it includes a default shape or canonical example, follow it.
+When writing into an artifact directory, read that directory's `README.md` first. If it includes a prescriptive shape, follow it. If it is intentionally lightweight, keep the output lightweight too.
 
 ## Repo-Specific Guardrails
 
@@ -24,10 +25,13 @@ When writing into an artifact directory, read that directory's `README.md` first
 
 ## Operating Rules
 
-- Keep durable truth in repo files, not only in chat.
+- Keep durable truth in repo files, not only in external tools.
 - Route work using the routing ladder in `REPO.md`.
 - Preserve the boundary between `SPEC.md`, `STATUS.md`, `PLANS.md`, `INBOX.md`, `research/`, `records/decisions/`, and `records/agent-worklogs/`.
 - Worker agents should prefer worklogs, evidence, and proposals. The orchestrator or operator owns truth-doc updates unless the operator explicitly allows a different flow.
+- Treat `INBOX.md` as pressure, not a backlog. During inbox review, cluster capture and promote only survived triage.
+- Promote sparsely. Do not mirror one evolving thought into research, decisions, plans, spec, status, upstream records, and worklogs.
+- If the repo tracks upstream on a cadence, use `upstream-intake/` instead of inventing a parallel workflow.
 - When creating artifacts or commits, follow the stable-ID and provenance rules in `REPO.md`.
 - Prefer the local `README.md` shape over ad hoc formatting when it defines one.
 - If commit hooks are enabled, your commit message must satisfy the repo provenance check before the commit is allowed.
@@ -39,9 +43,20 @@ When writing into an artifact directory, read that directory's `README.md` first
 When you write or update repo artifacts, adherence to the repo's ruleset is required.
 
 - Do not invent a new document shape when the repo already provides a canonical surface, directory `README.md`, or explicit template.
-- Do not collapse truth, plans, decisions, research, inbox intake, and worklogs into one mixed artifact.
+- Do not collapse truth, plans, decisions, research, inbox capture, and worklogs into one mixed artifact.
+- Do not promote exploratory debate into `SPEC.md`, `STATUS.md`, `PLANS.md`, or `records/decisions/` until there is a concise accepted outcome for that layer.
+- Do not turn an inbox review into a giant digest of every low-confidence idea. Report counts or clusters when full detail does not protect focus.
 - Do not write chatty transcripts where the repo expects normalized records.
+- If an artifact guide is intentionally lightweight, do not over-structure the document just to make it look uniform.
 - If an artifact would need to diverge from the established shape, make the smallest justified deviation and keep the core fields and section order intact.
 - If the repo guidance and the requested output appear to conflict, follow the repo rules and explain the tension in the artifact or handoff.
 - Do not bypass commit provenance checks by omitting required trailers unless the commit is an explicit bootstrap or migration exception.
 - After cloning or resetting local Git config, run `scripts/install-hooks.sh` so local commits use the repo's `commit-msg` hook.
+
+## Skills
+
+`skills/<name>/SKILL.md` files are reusable procedures for bounded workflows.
+
+- Keep them procedural.
+- Do not duplicate canonical repo policy inside them.
+- Use them to standardize repeatable tasks, escalation triggers, and output shape.

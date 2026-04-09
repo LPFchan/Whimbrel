@@ -1,10 +1,43 @@
 # Skills
 
-This directory is optional and procedural.
+This directory is Whimbrel's repo-native procedure layer copied from the repo-template scaffold.
 
-Use it only in environments that support reusable workflows. These skills should help route work through Whimbrel's operating model; they should not duplicate the canonical rules from `REPO.md`.
+Use it as repo-native procedural documentation.
+Agents should read the relevant workflow even when their runtime does not auto-load skills.
 
-## What Lives Here
+Each reusable workflow should live at `skills/<name>/SKILL.md`.
+
+Required baseline skills:
 
 - `repo-orchestrator/`
-  - workflow for routing truth, status, plans, research, decisions, and worklogs inside this repo
+  - Generic routing workflow for truth, status, plans, research, decisions, worklogs, and inbox capture.
+- `daily-inbox-pressure-review/`
+  - Focus-protecting daily triage for `IBX-*` capture and capture packets.
+
+Conditional skills:
+
+- `upstream-intake/`
+  - Companion workflow for the optional upstream-review module.
+  - Include it when the adopted repo enables `upstream-intake/`; omit it when the repo does not track an upstream.
+
+Keep skills procedural.
+Do not duplicate the canonical rules from `REPO.md` inside them.
+
+Use `SKILL.md` for:
+
+- step-by-step procedures
+- required inputs and expected outputs
+- escalation triggers
+- links to supporting templates or reference docs
+
+Do not use `SKILL.md` for:
+
+- repo-wide policy
+- general project truth
+- local or personal preferences that belong in tool-specific memory files
+
+## Whimbrel Scope
+
+- `repo-orchestrator/` is adapted for Whimbrel's static app and inactive upstream-intake posture.
+- `daily-inbox-pressure-review/` is required baseline triage procedure.
+- `upstream-intake/` is intentionally omitted while `upstream-intake/` remains inactive in this repo.

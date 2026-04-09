@@ -69,7 +69,7 @@ When writing repo artifacts:
 
 - read the nearest canonical surface, directory `README.md`, and any explicit template before drafting
 - if the local `README.md` includes a default shape or canonical example, follow it by default
-- default to the established section order for that artifact type unless the task has a strong reason to differ
+- use the established section order only when the surface actually defines one and it helps the repo stay legible
 - write normalized repo records, not chat transcripts or stream-of-consciousness notes
 - keep facts, decisions, open questions, and next steps clearly separated
 - summarize evidence and outcomes instead of pasting raw command output unless the literal output is the artifact

@@ -1,7 +1,6 @@
 # Whimbrel Spec
 
-This file is the canonical statement of what Whimbrel is supposed to be.
-Keep it durable. Do not use it as a changelog, inbox, or weekly narrative.
+Durable product and system truth for Whimbrel.
 
 ## Identity
 
@@ -12,70 +11,115 @@ Keep it durable. Do not use it as a changelog, inbox, or weekly narrative.
 - Last updated: `2026-04-09`
 - Related decisions: `DEC-20260409-001`
 
-## Product Thesis
+## System Context
 
-Whimbrel is the browser-based companion app for the Ninebot G30 immobilizer system built around the Uguisu key fob and Guillemot receiver. It exists to let the operator update device firmware and provision a shared AES-128-CCM secret from a supported desktop browser without adding a backend, desktop installer, or over-the-air pairing surface.
+Whimbrel is the browser-based companion web app for a three-part Ninebot Max G30 immobilizer system:
 
-## Primary User And Context
+- Uguisu: BLE key fob
+- Guillemot: scooter-side receiver
+- Whimbrel: this static web app
 
-- Primary operator: the owner or maintainer of a Whimbrel-managed scooter setup
-- Primary environment: a Chromium-class desktop browser with USB-C access to Uguisu or Guillemot
-- Primary problem being solved: safe local firmware flashing and secure write-only secret provisioning
-- Why this matters: the immobilizer depends on synchronized device firmware and a shared secret that should only be set with direct physical access
+Shared embedded protocol and cryptography logic live outside this repo in the Immogen/Guillemot/Uguisu firmware family. Whimbrel owns the operator-facing browser workflow for flashing firmware, provisioning fob/receiver secrets, and managing phone-key provisioning handoff.
 
-## Primary Workspace Object
+## What Whimbrel Does
 
-The main user-facing object is a provisioning or firmware-update session for a Guillemot receiver and/or an Uguisu fob.
+Whimbrel has three primary runtime areas.
 
-## Canonical Interaction Model
+### Firmware Flashing
 
-1. Open Whimbrel from GitHub Pages or another static host in a supported Chromium browser.
-2. Choose either the firmware flow or the key-provisioning flow.
-3. Connect the target device over USB and grant Web Serial access.
-4. Either fetch firmware release data or generate a new secret in browser memory.
-5. Send the DFU payload or provisioning payload to the device and wait for success or error feedback.
-6. Repeat for the companion device when pairing both sides of the immobilizer.
-7. End the session; the generated secret is not persisted once the tab is closed.
+Whimbrel fetches firmware release data from GitHub, downloads a Nordic DFU release ZIP, extracts the `.dat` and `.bin` payloads in the browser, and flashes Uguisu or Guillemot over USB/Web Serial with Nordic Serial DFU.
 
-## Core Capabilities
+The operator-facing flow is:
 
-- Capability: Browser-based firmware flashing for Guillemot and Uguisu
-  - Why it exists: keep device firmware up to date without a separate native tool
-  - What must remain true: the app can fetch release metadata and guide the operator through Web Serial DFU
-- Capability: Secure key generation and provisioning
-  - Why it exists: pair the receiver and fob with a shared secret using physical access only
-  - What must remain true: secrets are generated in-browser, sent over USB, and not stored in repo or backend services
-- Capability: Guided operator flow
-  - Why it exists: reduce mistakes during flashing and provisioning
-  - What must remain true: the UI stays understandable for manual browser-based operation on desktop hardware
+1. Open Whimbrel from GitHub Pages or another static host.
+2. Choose the Firmware tab.
+3. Choose Guillemot receiver or Uguisu fob.
+4. Put the device into bootloader mode.
+5. Grant the browser access to the bootloader serial port.
+6. Wait for the DFU transfer to finish.
 
-## Invariants
+### Fob / Receiver Key Provisioning
 
-- Whimbrel remains a static web app deployable from the repo root on GitHub Pages.
-- Provisioning relies on USB/Web Serial rather than OTA or BLE-based secret setup.
-- The generated secret is ephemeral browser memory for the current session and is not intentionally persisted by Whimbrel.
-- Shared protocol and broader device firmware ownership live outside this repo, especially in Immogen.
+Whimbrel generates a new 128-bit AES key in browser memory and sends write-only provisioning lines over USB CDC to the Uguisu fob and Guillemot receiver.
+
+Current serial provisioning payloads are built by `buildProvLine(slot, keyHex, ctr, name)`. The line shape is:
+
+```text
+PROV:<slot>:<32_hex_key>:<counter>:<name>
+```
+
+At the serial layer this is sent at 115200 baud with a line ending. Expected device outcomes include `ACK:PROV_SUCCESS` or an `ERR:...` line, followed on success by a boot string such as `BOOTED:Uguisu` or `BOOTED:Guillemot`. The legacy provisioning note documented an earlier CRC-bearing line shape; do not assume that older shape without checking current firmware/protocol.
+
+The fob/receiver operator flow is:
+
+1. Generate a secret in the Keys tab.
+2. Plug Uguisu into the computer over USB-C and flash the key fob.
+3. Plug Guillemot into the computer over USB-C and flash the receiver.
+4. Optionally continue into phone-key provisioning.
+5. Finish the session; the fob/receiver secret is not recoverable from Whimbrel after the tab closes.
+
+### Phone-Key / Dashboard Provisioning
+
+Whimbrel also contains a key-management dashboard overlay for phone-key slots. It can connect over Web Bluetooth to the management service exposed by the immobilizer system, display or manage device slots, generate an additional AES-128 key for a slot, derive PIN-based wrapping material with Argon2id for owner-phone setup, render an `immogen://...` QR payload for the Pipit phone app, and use BLE commands such as auth/provision/rename/revoke depending on the flow.
+
+The first-time no-phone-key flow is entered from the main Keys path; the dashboard can also be opened from the app shell as Manage Keys.
+
+## Security And Device-Access Boundary
+
+- Firmware flashing and fob/receiver provisioning use physical USB access.
+- Phone-key and dashboard operations may use an explicit Web Bluetooth management connection, a short physical provisioning window, a PIN step, and/or a QR handoff to Pipit.
+- Generated AES-128 keys exist in browser RAM for the active provisioning session.
+- QR payloads and BLE provisioning commands are sensitive operator-facing provisioning materials; do not log, persist, or publish real payloads.
+- Whimbrel should not store generated secrets in the repo, backend services, browser storage, logs, analytics, or ordinary navigation URLs.
+- Firmware is expected to expose no serial command for reading a provisioned key back.
+- If one paired device is replaced, a new secret should be generated and provisioned to both the surviving device and the replacement.
+
+## Runtime And Hosting Boundary
+
+- Whimbrel is a static HTML/CSS/JavaScript app served from the repo root.
+- There is no required bundler, build step, backend, account system, or database.
+- The runtime stack is vanilla HTML/CSS/JS, Web Crypto, Web Serial, Web Bluetooth, JSZip, aes-js, argon2-browser, QRious, canvas-confetti, and browser-native streams/serial/BLE APIs.
+- The default public deployment target is GitHub Pages.
+- Once loaded, the app is intended to run entirely in the browser.
+- Primary supported browsers are supported Chromium-family desktop browsers with the required Web Serial / Web Bluetooth capabilities. Browsers without those APIs cannot perform the corresponding device flows.
+
+## Current App Surfaces
+
+- `index.html`: single-page app shell, tabs, dashboard overlay mount, root markup, theme initialization, ordered script loading, demo-mode flag on the `demo` branch
+- `manifest.json`: PWA manifest
+- `css/style.css`: layout, themes, components, stepper/progress/status styling
+- `js/config.js`: Whimbrel namespace, demo-mode detection, runtime constants
+- `js/api.js`: GitHub release-fetching service with demo-mode release data
+- `js/firmware-manager.js`: firmware ZIP download / manifest / binary extraction
+- `js/app.js`: tab switching, main Keys flow, phone-key prompt handoff, history integration, shared UI helpers
+- `js/dashboard.js`: Manage Keys overlay, phone-key slot UI, no-phone-key tutorial, PIN and QR handoff flow
+- `js/crypto.js`: AES-key generation, CRC-16, provisioning line construction
+- `js/ccm.js`: AES-CCM helper / buffer conversion surface used by phone-key provisioning
+- `js/ble.js`: Web Bluetooth manager for the management command/response characteristics
+- `js/serial.js`: Web Serial request helper and `SerialConnection` class for line-mode serial I/O
+- `js/prov.js`: phone provisioning helper plus serial boot-wait helper
+- `js/dfu.js`: Nordic Serial DFU framing, checksums, object transfer, flashing sequence
+- `js/firmware.js`: firmware-tab UI, device/release/local-file choice, flash UI orchestration, DFU handoff
+- `assets/`: user-facing device imagery
 
 ## Non-Goals
 
-- Providing a backend service or cloud synchronization layer
-- Replacing the firmware/device repos that own shared embedded logic
-- Supporting browsers that lack the Web Serial capability required by the provisioning and DFU flows
+- Backend service or cloud synchronization layer
+- A way to recover or read back provisioned secrets
+- Replacement for the firmware/device repos that own shared embedded logic
+- Mandatory build-only deployment path
+- Main-flow support for browsers that cannot expose the required Web Serial / Web Bluetooth device APIs
 
-## Main Surfaces
+## Safety And Legal Posture
 
-- Surface: `index.html`, `css/`, `js/`, `assets/`, `manifest.json`
-  - Purpose: the user-facing static web app
-  - Notes: runtime architecture remains vanilla HTML/CSS/JavaScript served from repo root
-- Surface: `README.md`
-  - Purpose: public-facing introduction and usage instructions
-  - Notes: useful for external readers; not the canonical operations layer
-- Surface: `SPEC.md`, `STATUS.md`, `PLANS.md`, `INBOX.md`, `research/`, `records/`
-  - Purpose: repo-native truth, planning, research, decisions, and work history
-  - Notes: governs future maintenance without changing the deployed runtime on its own
+- This is a prototype security/power-interrupt device workflow; use at your own risk.
+- Whimbrel is not affiliated with Segway-Ninebot.
+- Do not test lock or immobilizer behavior while riding.
 
 ## Success Criteria
 
-- Operators can flash the latest Guillemot and Uguisu firmware from a supported browser.
-- Operators can generate and provision a new shared secret without Whimbrel persisting that secret after the session ends.
-- Future maintainers can understand what Whimbrel is, what is true right now, and what has been decided without reconstructing context from chat or scattered notes.
+- Operators can flash current Guillemot and Uguisu firmware from a supported desktop browser.
+- Operators can generate one shared fob/receiver secret and provision both devices over direct USB without Whimbrel persisting the secret.
+- Operators can complete the accepted phone-key path when the BLE provisioning window, PIN/QR handoff, and Pipit-side scan are available.
+- The static GitHub Pages deployment remains understandable and recoverable from the repo root.
+- Future maintainers can separate durable product truth, current status, accepted plans, research, decisions, and execution history without reconstructing context from chat.

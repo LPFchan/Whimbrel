@@ -33,10 +33,11 @@ Every repo using this model should separate these surfaces:
 | `SPEC.md` | Durable statement of what Whimbrel is supposed to be. | rewritten |
 | `STATUS.md` | What is true right now operationally. | rewritten |
 | `PLANS.md` | Accepted future direction that is not current truth yet. | rewritten |
-| `INBOX.md` | Ephemeral intake waiting for triage. | append then purge |
+| `INBOX.md` | Ephemeral capture waiting for triage. | append then purge |
 | `research/` | Curated research memos worth keeping. | append by new file |
 | `records/decisions/` | Durable decision records with rationale. | append-only by new file |
 | `records/agent-worklogs/` | Execution history for runs, agents, and subagents. | append-only |
+| `skills/` | Required procedural workflows for repeatable agent tasks. | edit by skill |
 | `upstream-intake/` | Optional upstream review subsystem. | inactive in this repo unless explicitly enabled |
 
 ## Agent Compatibility Files
@@ -49,6 +50,8 @@ When a repo using this model includes them:
 - they should stay short enough that they do not drift from `REPO.md`
 - `CLAUDE.md` may import or reference `REPO.md` when the tool supports it
 - `SKILL.md` stays separate because it defines a bounded reusable procedure, not repo-wide policy
+- `skills/` should ship with adopted repos as repo-native procedural documentation, even when the agent runtime does not auto-load skills
+- optional repo subsystems may have optional companion skills
 
 Recommended split:
 
@@ -70,7 +73,7 @@ When writing repo artifacts:
 - read the nearest canonical surface, directory `README.md`, and any explicit template before drafting
 - if the local `README.md` includes a default shape or canonical example, follow it by default
 - use the established section order only when the surface actually defines one and it helps the repo stay legible
-- write normalized repo records, not chat transcripts or stream-of-consciousness notes
+- write normalized repo records, not external transcripts or stream-of-consciousness notes
 - keep facts, decisions, open questions, and next steps clearly separated
 - summarize evidence and outcomes instead of pasting raw command output unless the literal output is the artifact
 - prefer short declarative bullets or paragraphs over vague filler
@@ -78,7 +81,7 @@ When writing repo artifacts:
 When a directory exists to store a durable artifact type, it should ideally include:
 
 - a `README.md` that explains what belongs there
-- a default shape or canonical example inside that same `README.md`
+- a default shape or canonical example inside that same `README.md` when that artifact type benefits from it
 
 That single guide helps future agents copy a house style instead of inventing one.
 
@@ -117,12 +120,13 @@ The orchestrator owns synthesis and routing.
 It may:
 
 - triage inbox items
+- run daily inbox pressure reviews
 - classify work into the right artifact layer
 - update `SPEC.md`, `STATUS.md`, and `PLANS.md`
 - create research memos
 - create decision records
 - append to ongoing worklogs and create new worklogs only when clarity requires a separate execution record
-- translate messenger intake into repo artifacts
+- translate external capture into repo artifacts
 - escalate non-obvious product, architecture, workflow, or policy calls
 
 ### Worker Agents
@@ -137,24 +141,98 @@ They may:
 
 They should not update `SPEC.md`, `STATUS.md`, or `PLANS.md` directly unless the operator explicitly allows that flow.
 
-### Messenger Surfaces
+### External Capture Surfaces
 
-Messenger surfaces are intake and control channels.
+External capture surfaces are capture and control channels.
 
 They may:
 
-- create or append inbox intake
+- create or append inbox capture
 - request approvals
 - deliver summaries
 - surface blocked states
 
 They must not write truth docs directly.
 
+### Capture Packets
+
+Raw external source events are immutable Off-Git events.
+Do not treat every raw source event as a separate repo artifact.
+Do not treat a full external-tool history as one giant inbox item.
+
+Use capture packets as mutable working envelopes around one or more relevant raw source events.
+
+A capture packet may be:
+
+- appended as new related source events arrive
+- edited into a clearer operator-intent summary
+- split when it contains multiple independent asks
+- merged when several source events are one meaningful thread
+- summarized into `INBOX.md` as an `IBX-*`
+- routed into durable repo artifacts after triage
+
+Triage should happen per meaningful capture packet.
+Routed repo artifacts should copy a short summary, the stable inbox ID, and any needed external provenance handle instead of relying on raw external source staying visible.
+
+## Inbox Pressure Review
+
+`INBOX.md` is an ephemeral scratch disk for untriaged capture.
+It is not a backlog, roadmap, brainstorm archive, or project digest.
+
+Run a daily inbox pressure review when the project receives substantial capture.
+This review is focus-protecting triage.
+It is not an unconditional digest of every random idea.
+
+During the review:
+
+- group related `IBX-*` entries and capture packets into meaningful clusters
+- identify stale, duplicate, low-confidence, noisy, or "maybe later" capture
+- ask whether each meaningful cluster should route, research, plan, discard, or stay held
+- promote only items that survived triage and have an accepted destination
+- report counts or clusters of held, discarded, stale, or noisy capture instead of summarizing every low-signal item
+- preserve `IBX-*` as a permanent provenance ID even if the inbox line is deleted
+
+Do not update `SPEC.md`, `STATUS.md`, `PLANS.md`, `research/`, or `records/decisions/` directly from raw inbox pressure.
+The orchestrator or operator-approved routing step owns promotion.
+
+## Promotion Discipline
+
+Promotion should be sparse.
+Do not mirror one evolving thought into every repo surface.
+
+Raw shaping may stay in external capture, generic notes, off-Git capture packets, or `INBOX.md` while the thought is still forming.
+Repo artifacts are a refinery: each layer should receive only the part that belongs there, when it is ready.
+
+Use each layer for its distinct job:
+
+- `INBOX.md`
+  - ephemeral routed capture
+- `research/`
+  - reusable exploration, evidence, framing, rejected paths, and open questions
+- `records/decisions/`
+  - meaningful accepted choices and why the winning choice won
+- `PLANS.md`
+  - accepted future work that survived triage
+- `SPEC.md`
+  - concise durable product or system truth after the argument is settled
+- `STATUS.md`
+  - current operational reality
+- `upstream-intake/`
+  - upstream review, upstream conflict, carry-forward, and operator escalation for upstream-related choices
+- `records/agent-worklogs/`
+  - execution history, not truth, decision, plan, or research mirrors
+
+A research memo may remain research forever.
+A decision record should exist only when a real product, architecture, workflow, trust, upstream, or repo-operating choice has been made.
+`SPEC.md`, `STATUS.md`, and `PLANS.md` should receive concise outcomes, not copied debate.
+
+One task may touch multiple layers, but each touched layer must have its own distinct job.
+
 ## Orchestrator Routing Ladder
 
 When new work arrives, the orchestrator should classify it in this order:
 
-1. Is this untriaged intake?
+1. Is this untriaged capture?
    - Route to `INBOX.md`.
 2. Is this recurring upstream review?
    - Route to `upstream-intake/` only if that subsystem has been explicitly activated for this repo.
@@ -177,10 +255,14 @@ One task may legitimately touch multiple layers. For example:
 - a product choice can create `DEC-*` and update `PLANS.md`
 - implementation progress can append `LOG-*` and update `STATUS.md`
 
+Touch multiple layers only when each layer receives distinct information.
+Do not copy the same evolving thought into research, decision, plan, spec, status, upstream, and log surfaces.
+
 ## Write Rules
 
 - `SPEC.md`, `STATUS.md`, and `PLANS.md` should be updated only by the operator or orchestrator.
-- `INBOX.md` is an aggressive scratch disk. Purge entries once they are reflected elsewhere.
+- `INBOX.md` is an aggressive scratch disk. Purge entries once they are reflected elsewhere or explicitly discarded.
+- Daily inbox review should reduce pressure by clustering, routing, holding, or purging capture; it should not generate a larger digest by default.
 - `research/` keeps curated findings only.
 - `records/decisions/` is append-only by new decision file.
 - `records/agent-worklogs/` is append-only by appended entries or, when clarity requires it, a new log file.
@@ -280,7 +362,7 @@ The Off-Git runtime should answer:
 
 - which conversation or run the `agent-id` maps to
 - whether the agent was top-level or a subagent
-- which messages or events produced the artifact
+- which source events produced the artifact
 - which commits belong to that `agent-id`
 
 ## Legacy Material Policy

@@ -19,7 +19,7 @@ Do not put raw brainstorms or untriaged intake here.
 - Expected value: less context loss, fewer ad hoc notes, and clearer repo history for future maintainers and agents
 - Preconditions: contributors follow `REPO.md` and the local orchestrator skill
 - Earliest likely start: immediately after bootstrap adoption
-- Related ids: `DEC-20260409-001`, `LOG-20260409-001`
+- Related ids: `DEC-20260409-001`
 
 ### Triage Existing Architecture Research Before Approving Runtime Refactors
 
@@ -34,10 +34,10 @@ Do not put raw brainstorms or untriaged intake here.
 
 ### Near Term
 
-- Initiative: use `DEC-*`, `LOG-*`, and commit trailers on the next non-bootstrap repo changes
+- Initiative: use `DEC-*`, commit-backed `LOG-*`, and commit trailers on the next non-bootstrap repo changes
   - Why now: the operating model only helps if future work follows it immediately
   - Dependencies: `DEC-20260409-001`, `REPO.md`
-  - Related ids: `DEC-20260409-001`, `LOG-20260409-001`
+  - Related ids: `DEC-20260409-001`
 - Initiative: review the architecture-research memo and decide whether to accept any refactor work
   - Why now: current risks are documented, but no runtime refactor direction has been approved yet
   - Dependencies: operator time and `RSH-20260409-002`
@@ -45,7 +45,7 @@ Do not put raw brainstorms or untriaged intake here.
 
 ### Mid Term
 
-- Initiative: create explicit decisions and worklogs before undertaking major runtime restructuring
+- Initiative: create explicit decisions and commit-backed execution history before undertaking major runtime restructuring
   - Why later: runtime architecture changes should be deliberate rather than folded into opportunistic fixes
   - Dependencies: accepted operator decision on scope and timing
   - Related ids: `RSH-20260409-002`

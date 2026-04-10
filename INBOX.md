@@ -17,7 +17,7 @@ Rules:
 
 ## Active Capture
 
-No active capture. The bootstrap adoption work for the repo operating layer has already been reflected into `SPEC.md`, `STATUS.md`, `PLANS.md`, `research/`, `records/decisions/`, and `records/agent-worklogs/`.
+No active capture. The bootstrap adoption work for the repo operating layer has already been reflected into `SPEC.md`, `STATUS.md`, `PLANS.md`, `research/`, `records/decisions/`, and git commit history via `commit: LOG-*`.
 
 ## Capture Entry Template
 
@@ -54,4 +54,4 @@ Use this section during a daily IBX review, then clear it after entries are rout
 
 ## Purge Rule
 
-Once an item has been reflected into `SPEC.md`, `STATUS.md`, `PLANS.md`, `research/`, `records/decisions/`, `records/agent-worklogs/`, `upstream-intake/`, or a deliberate discard/hold note, remove the inbox entry.
+Once an item has been reflected into `SPEC.md`, `STATUS.md`, `PLANS.md`, `research/`, `records/decisions/`, git commit history via `commit: LOG-*`, `upstream-intake/`, or a deliberate discard/hold note, remove the inbox entry.

@@ -8,7 +8,7 @@ Recorded by agent: `codex-20260409-repo-template-normalization`
 - Status: accepted
 - Deciders: operator, orchestrator
 - Refines: `DEC-20260409-001`
-- Related ids: `LOG-20260409-002`
+- Related ids: `DEC-20260409-001`
 
 ## Decision
 
@@ -18,7 +18,7 @@ Whimbrel will normalize its repo-template adoption by:
 - treating local directory `README.md` guides as binding document-format contracts
 - enabling commit provenance enforcement both locally and in CI
 
-The local enforcement will use the repo-template-style `commit-msg` hook plus validator scripts, adapted to require `project: whimbrel` and repo-template artifact IDs. CI will re-run the same standards across pushed or pull-request commit ranges.
+The local enforcement will use the repo-template-style `commit-msg` hook plus validator scripts, adapted to require `project: whimbrel` and commit-backed `LOG-*` records. CI will re-run the same standards across pushed or pull-request commit ranges.
 
 ## Context
 
@@ -48,7 +48,8 @@ The combined hook and CI approach gives Whimbrel the strongest practical enforce
 
 ## Consequences
 
-- Future commits are expected to carry compliant `project:`, `agent:`, `role:`, and `artifacts:` trailers unless they are explicit bootstrap or migration exceptions.
+- Future commits are expected to carry compliant `project:`, `agent:`, `role:`, and `commit:` trailers unless they are explicit bootstrap or migration exceptions.
+- `artifacts:` remains optional and must not contain `LOG-*`.
 - Local contributors should run `scripts/install-hooks.sh` so commit-time checks happen before commit creation.
 - CI will reject pushed or PR commit ranges that contain non-compliant commit messages.
 - Repo-specific runtime constraints remain in force: Whimbrel stays a static root-served web app, `logs/` remains legacy archive, and `upstream-intake/` stays inactive unless a future decision enables it.

@@ -8,11 +8,11 @@ Recorded by agent: `codex-20260409-repo-template-adoption`
 - Status: `accepted`
 - Scope: repo operations and provenance only
 - Supersedes: none
-- Related ids: `LOG-20260409-001`, `RSH-20260409-001`, `RSH-20260409-002`, `RSH-20260409-003`
+- Related ids: `RSH-20260409-001`, `RSH-20260409-002`, `RSH-20260409-003`
 
 ## Decision
 
-Whimbrel will adopt `repo-template` as its repo-native operating layer without changing the static app's runtime layout. The repo will use canonical root docs, durable research/decision/worklog directories, stable artifact IDs, and commit provenance trailers for all normal post-bootstrap work.
+Whimbrel will adopt `repo-template` as its repo-native operating layer without changing the static app's runtime layout. The repo will use canonical root docs, durable research and decision surfaces, stable artifact IDs, commit-backed execution history, and commit provenance trailers for all normal post-bootstrap work.
 
 Additional decision points:
 
@@ -40,6 +40,7 @@ Option 3 gives Whimbrel the clarity benefits of the template without disturbing 
 ## Consequences
 
 - Future durable work should be routed into the new canonical surfaces instead of `logs/`.
-- Post-bootstrap commits should carry `project:`, `agent:`, `role:`, and `artifacts:` trailers.
+- Post-bootstrap commits should carry `project:`, `agent:`, `role:`, and `commit:` trailers.
+- `artifacts:` remains optional and must not contain `LOG-*`.
 - Contributors need to learn and follow the routing discipline manually until stronger enforcement is explicitly approved.
 - If Whimbrel later starts a real upstream-tracking workflow, a separate decision should activate `upstream-intake/`.

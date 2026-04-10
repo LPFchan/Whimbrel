@@ -13,7 +13,7 @@ Recorded by agent: codex-20260409-repo-template-adoption
 
 ## Review Position
 
-This memo captures areas for improvement in the Whimbrel codebase. It is diagnostic: any remaining recommendation needs operator acceptance, a decision record where appropriate, and an implementation worklog before it becomes planned runtime work.
+This memo captures areas for improvement in the Whimbrel codebase. It is diagnostic: any remaining recommendation needs operator acceptance, a decision record where appropriate, and commit-backed execution history before it becomes planned runtime work.
 
 ## Finding Status Summary
 
@@ -141,4 +141,4 @@ The dashboard/phone-key provisioning system was added after the legacy architect
 - Keep this document in `research/`.
 - Promote remaining architecture directions into `PLANS.md` only after operator acceptance.
 - Capture product/architecture decisions in `records/decisions/` before major runtime restructuring.
-- Use `records/agent-worklogs/` for the execution history of any accepted refactor.
+- Use git commit history via `commit: LOG-*` for the execution history of any accepted refactor.

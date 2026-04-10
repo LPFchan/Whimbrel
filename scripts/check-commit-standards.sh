@@ -9,6 +9,7 @@ fi
 
 msg_file=$1
 repo_root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
+expected_sha=${EXPECTED_COMMIT_SHA:-}
 
 if [ ! -f "$msg_file" ]; then
   echo "commit standards check failed: commit message file not found: $msg_file" >&2
@@ -246,6 +247,9 @@ check_primary_id_uniqueness() {
     for existing_id in $(extract_commit_ids_from_value "$existing_value"); do
       if [ "$existing_id" = "$primary_id" ]; then
         if [ -n "$head_sha" ] && [ "$sha" = "$head_sha" ]; then
+          continue
+        fi
+        if [ -n "$expected_sha" ] && [ "$sha" = "$expected_sha" ]; then
           continue
         fi
         fail "primary \`commit:\` id already exists in history: $primary_id"

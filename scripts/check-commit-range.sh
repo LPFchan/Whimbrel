@@ -51,6 +51,7 @@ fi
 for commit in $commits; do
   tmp=$(mktemp)
   git -C "$repo_root" log -1 --format=%B "$commit" > "$tmp"
+  # Local extension: set EXPECTED_COMMIT_SHA so backfilled reviewed commits can validate cleanly.
   if ! EXPECTED_COMMIT_SHA="$commit" "$checker" "$tmp"; then
     echo >&2
     echo "Offending commit: $commit" >&2

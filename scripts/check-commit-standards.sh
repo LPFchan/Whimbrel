@@ -9,6 +9,7 @@ fi
 
 msg_file=$1
 repo_root=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
+# Local extension: reviewed commit validation for backfilled LOG history sets EXPECTED_COMMIT_SHA.
 expected_sha=${EXPECTED_COMMIT_SHA:-}
 
 if [ ! -f "$msg_file" ]; then
@@ -274,6 +275,7 @@ has_trailer "commit" || fail "missing trailer: commit"
 
 expected_project_id=""
 if [ -f "$repo_root/project-id" ]; then
+  # Local extension: keep the repo-specific project-id check when the file is present.
   expected_project_id=$(tr -d '[:space:]' < "$repo_root/project-id")
 fi
 

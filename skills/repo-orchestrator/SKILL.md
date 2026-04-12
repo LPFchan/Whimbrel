@@ -1,7 +1,7 @@
 ---
 name: repo-orchestrator
-description: "Route Whimbrel work into the correct artifact layer while keeping runtime app files separate from repo-management artifacts."
-argument-hint: "Task, capture item, maintenance request, or architectural note"
+description: "Route work into the correct artifact layer in a repo that uses repo-template."
+argument-hint: "Task, capture item, or maintenance request"
 ---
 
 # Repo Orchestrator
@@ -9,16 +9,13 @@ argument-hint: "Task, capture item, maintenance request, or architectural note"
 Use this skill with:
 
 - [../../REPO.md](../../REPO.md)
-- [../../SPEC.md](../../SPEC.md)
-- [../../STATUS.md](../../STATUS.md)
-- [../../PLANS.md](../../PLANS.md)
 
 ## What This Skill Produces
 
-- correctly routed Whimbrel repo artifacts
+- correctly routed repo artifacts
 - clear separation between truth, plans, research, decisions, and commit-backed execution
 - stable IDs plus lightweight provenance
-- runtime changes that stay grounded in the static-app constraints documented in this repo
+- operator escalation only when a real judgment call exists
 
 ## Procedure
 
@@ -32,7 +29,7 @@ Use this skill with:
    - Is this a durable decision?
    - Is this execution history?
 
-2. Route it to the correct layer.
+2. Route it to the correct artifact layer.
    - `SPEC.md`
    - `STATUS.md`
    - `PLANS.md`
@@ -75,7 +72,7 @@ Use this skill with:
    - `role: orchestrator|worker|subagent|operator`
    - `commit: LOG-...[, LOG-...]`
    - `artifacts:` is optional and must not contain `LOG-*`
-   - If commit hooks are enabled, make the commit message pass the local validator before retrying.
+   - Make the commit message pass the required local validator before retrying.
    - Use the structured body keys `timestamp:`, `changes:`, `rationale:`, and `checks:` with `notes:` optional.
 
 8. If the task is recurring upstream maintenance and the optional module is enabled, use `upstream-intake/` instead of inventing a parallel workflow.
@@ -101,4 +98,4 @@ Escalate instead of guessing when the work:
 - sparse promotion
 - clear provenance
 - clean separation of layers
-- runtime-aware recommendations that preserve Whimbrel's static app constraints unless a new decision changes them
+- reusable artifacts instead of external-tool-only outcomes

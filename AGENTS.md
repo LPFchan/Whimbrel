@@ -18,25 +18,19 @@ Before running a repeatable repo workflow, read the relevant `skills/<name>/SKIL
 
 When writing into an artifact directory, read that directory's `README.md` first. If it includes a prescriptive shape, follow it. If it is intentionally lightweight, keep the output lightweight too.
 
-## Repo-Specific Guardrails
-
-- Whimbrel is a static HTML/CSS/JavaScript app served from the repo root. Do not move runtime entrypoints out of the root-served layout or add a build-only indirection unless a decision record authorizes it.
-- `logs/` is a legacy archive. Keep existing references working, but put all new durable research and decisions into the active repo-template surfaces.
-- `upstream-intake/` is not active in this repo. Do not invent that subsystem unless a future decision explicitly enables it.
-
 ## Operating Rules
 
 - Keep durable truth in repo files, not only in external tools.
 - Route work using the routing ladder in `REPO.md`.
-- Preserve the boundary between `SPEC.md`, `STATUS.md`, `PLANS.md`, `INBOX.md`, `research/`, `records/decisions/`, and commit-backed execution history.
+- Preserve the boundary between `SPEC.md`, `STATUS.md`, `PLANS.md`, `INBOX.md`, `research/`, `records/decisions/`, commit-backed execution history, and `upstream-intake/`.
 - Worker agents should prefer evidence, proposals, and compliant commit-backed execution records. The orchestrator or operator owns truth-doc updates unless the operator explicitly allows a different flow.
 - Treat `INBOX.md` as pressure, not a backlog. During inbox review, cluster capture and promote only survived triage.
 - Promote sparsely. Do not mirror one evolving thought into research, decisions, plans, spec, status, upstream records, and execution records.
 - If the repo tracks upstream on a cadence, use `upstream-intake/` instead of inventing a parallel workflow.
 - When creating artifacts or commits, follow the stable-ID and provenance rules in `REPO.md`.
 - Prefer the local `README.md` shape over ad hoc formatting when it defines one.
-- If commit hooks are enabled, your commit message must satisfy the repo provenance check before the commit is allowed.
-- If CI commit checks are enabled, your pushed commits must satisfy the same provenance rules remotely.
+- Your commit message must satisfy the local repo provenance check before the commit is allowed.
+- Your pushed commits must satisfy the same provenance rules remotely in CI.
 - Treat each committed change as a canonical execution record through `commit: LOG-*`.
 - Normal commits must use the structured body keys `timestamp:`, `changes:`, `rationale:`, and `checks:` with `notes:` optional.
 
@@ -61,3 +55,9 @@ When you write or update repo artifacts, adherence to the repo's ruleset is requ
 - Keep them procedural.
 - Do not duplicate canonical repo policy inside them.
 - Use them to standardize repeatable tasks, escalation triggers, and output shape.
+
+## Local Divergence
+
+- Whimbrel is a static HTML/CSS/JavaScript app served from the repo root. Do not move runtime entrypoints out of the root-served layout or add a build-only indirection unless a decision record authorizes it.
+- `logs/` is a legacy archive. Keep existing references working, but put all new durable research and decisions into the active repo-template surfaces.
+- `upstream-intake/` is not active in this repo. Do not invent that subsystem unless a future decision explicitly enables it.

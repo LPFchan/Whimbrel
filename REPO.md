@@ -1,10 +1,10 @@
-# Whimbrel Repo Contract
+# Repo Operating Model
 
-This document is the canonical repo contract for Whimbrel.
+This document is the canonical repo contract for repo-template-style repos.
 
 ## Purpose
 
-Use this model when Whimbrel is managed by one operator plus many agents and you want the repo itself to remain legible over time.
+Use this model when a repo is managed by one operator plus many agents and you want the repo itself to remain legible over time.
 
 The goal is simple:
 
@@ -13,16 +13,7 @@ The goal is simple:
 - keep provenance explicit
 - let the orchestrator route work without inventing new storage rules each time
 
-This operating layer is additive. It does not change the static web app layout, GitHub Pages deployment model, or browser runtime architecture on its own.
-
-## Project Metadata
-
-- Project: Whimbrel
-- Project id: `whimbrel`
-- Canonical repo: `https://github.com/LPFchan/Whimbrel`
-- Runtime shape: static HTML/CSS/JavaScript app served from the repo root
-- Legacy archive: `logs/` remains as read-only historical context
-- Upstream intake status: inactive unless a future decision explicitly activates `upstream-intake/`
+This file is part of the ready-to-copy scaffold for adopted repos.
 
 ## Core Surfaces
 
@@ -219,7 +210,7 @@ Use each layer for its distinct job:
   - current operational reality
 - `upstream-intake/`
   - upstream review, upstream conflict, carry-forward, and operator escalation for upstream-related choices
-- `git commit history`
+- git commit history via `commit: LOG-*`
   - canonical execution history, not truth, decision, plan, or research mirrors
 
 A research memo may remain research forever.
@@ -268,7 +259,7 @@ Do not copy the same evolving thought into research, decision, plan, spec, statu
 - Routine execution history lives in git commit history through commit-backed `LOG-*` records.
 - Do not invent a parallel execution-history file layer.
 - If work produces no durable repo change, route only the durable outcome that belongs elsewhere or keep the raw trace Off-Git.
-- `upstream-intake/` should preserve its own paired internal-record and operator-brief workflow if the subsystem is ever activated.
+- `upstream-intake/` should preserve its own paired internal-record and operator-brief workflow.
 - Truth docs should reflect the latest accepted state, not every intermediate thought.
 
 ## Stable IDs
@@ -276,15 +267,16 @@ Do not copy the same evolving thought into research, decision, plan, spec, statu
 This model assumes:
 
 - `project-id` identifies the repo or workspace
-- `agent-id` identifies one conversation or run, 1:1
+- `agent-id` identifies the conversation or actor lineage that originated the artifact or commit
 - subagents receive their own `agent-id`
-- Off-Git systems resolve parent-child lineage, messages, events, and commit history from `agent-id`
+- Off-Git systems resolve runs, child lineage, messages, events, and commit history from `agent-id`
 
 Recommended prefixes:
 
 - `IBX-YYYYMMDD-NNN`
 - `RSH-YYYYMMDD-NNN`
 - `DEC-YYYYMMDD-NNN`
+- `LOG-YYYYMMDD-HHMMSS-<agent-suffix>`
 - `UPS-YYYYMMDD-NNN`
 
 File-backed artifact numbering is per day and per artifact type. Any agent may claim the next file-backed `NNN` by checking the least available value.
@@ -368,9 +360,9 @@ Body rules:
 
 ## Commit-Time Enforcement
 
-If the repo enables commit hooks, every attempted commit should be checked against these provenance rules.
+Repos using this system must enforce these provenance rules both locally and remotely.
 
-Recommended minimum enforcement:
+Required minimum enforcement:
 
 - reject commits that do not include `project:`, `agent:`, `role:`, and `commit:`
 - reject roles outside `orchestrator|worker|subagent|operator`
@@ -383,7 +375,7 @@ Recommended minimum enforcement:
 
 The goal is not perfect policy automation. The goal is to stop obviously non-compliant commits before they land.
 
-Best practice is to use both:
+Required enforcement layers:
 
 - local git hooks for fast feedback before the commit is created
 - CI for remote re-validation on push or pull request
@@ -410,9 +402,18 @@ The Off-Git runtime should answer:
 - which source events produced the artifact
 - how execution lineage maps across rebases, cherry-picks, merges, and absorbed `LOG-*` ids
 
-## Legacy Material Policy
+## Scaffold Rule
 
-- Keep `logs/` intact so existing references remain valid.
-- Treat migrated `RSH-*` research memos as the active durable equivalents of the legacy notes.
-- Commit history is the active execution-history surface.
-- Put all new durable work into the active operating surfaces listed above.
+`scaffold/` is a ready-to-copy repo skeleton, not a loose library of files to cherry-pick casually.
+
+Use it when you want a managed repo to share one canonical layout so humans and agents know exactly where work belongs.
+
+In this template, scaffold files live under `scaffold/`.
+After adoption, the scaffold contents belong at the target repo root.
+For example, `scaffold/skills/repo-orchestrator/SKILL.md` becomes `skills/repo-orchestrator/SKILL.md` in the adopted repo.
+
+## Local Divergence
+
+- Whimbrel is a static HTML/CSS/JavaScript app served from the repo root.
+- `logs/` remains read-only legacy context.
+- `upstream-intake/` is inactive unless a future decision explicitly activates it.

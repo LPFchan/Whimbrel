@@ -35,9 +35,3 @@ Do not use `SKILL.md` for:
 - repo-wide policy
 - general project truth
 - local or personal preferences that belong in tool-specific memory files
-
-## Whimbrel Scope
-
-- `repo-orchestrator/` is adapted for Whimbrel's static app and inactive upstream-intake posture.
-- `daily-inbox-pressure-review/` is required baseline triage procedure.
-- `upstream-intake/` is intentionally omitted while `upstream-intake/` remains inactive in this repo.

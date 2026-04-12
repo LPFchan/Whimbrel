@@ -1,7 +1,7 @@
 ---
 name: repo-orchestrator
-description: "Route Whimbrel work into the correct artifact layer while keeping runtime app files separate from repo-management artifacts."
-argument-hint: "Task, capture item, maintenance request, or architectural note"
+description: "Route work into the correct artifact layer in a repo that uses repo-template."
+argument-hint: "Task, capture item, or maintenance request"
 ---
 
 # Repo Orchestrator
@@ -9,16 +9,13 @@ argument-hint: "Task, capture item, maintenance request, or architectural note"
 Use this skill with:
 
 - [../../REPO.md](../../REPO.md)
-- [../../SPEC.md](../../SPEC.md)
-- [../../STATUS.md](../../STATUS.md)
-- [../../PLANS.md](../../PLANS.md)
 
 ## What This Skill Produces
 
-- correctly routed Whimbrel repo artifacts
-- clear separation between truth, plans, research, decisions, and worklogs
+- correctly routed repo artifacts
+- clear separation between truth, plans, research, decisions, and commit-backed execution
 - stable IDs plus lightweight provenance
-- runtime changes that stay grounded in the static-app constraints documented in this repo
+- operator escalation only when a real judgment call exists
 
 ## Procedure
 
@@ -32,51 +29,53 @@ Use this skill with:
    - Is this a durable decision?
    - Is this execution history?
 
-2. Route it to the correct layer.
+2. Route it to the correct artifact layer.
    - `SPEC.md`
    - `STATUS.md`
    - `PLANS.md`
    - `INBOX.md`
    - `research/`
    - `records/decisions/`
-   - `records/agent-worklogs/`
+   - git commit history via `commit: LOG-*`
+   - `upstream-intake/`
 
 3. Assign stable IDs when needed.
    - `IBX-*`
    - `RSH-*`
    - `DEC-*`
    - `LOG-*`
-   - Use the least available `NNN` for that date and artifact type.
+   - `UPS-*`
+   - Use the least available `NNN` for file-backed artifact types.
+   - For `LOG-*`, derive the suffix from `agent:`, start from the current KST second, and bump forward until unique on the current branch plus default branch.
 
 4. Write the artifact with provenance.
-   - Include `Opened: YYYY-MM-DD HH-mm-ss KST`
-   - Include `Recorded by agent: <agent-id>`
+   - For file-backed artifacts, include `Opened: YYYY-MM-DD HH-mm-ss KST` and `Recorded by agent: <agent-id>`.
    - Before drafting, read the destination directory's `README.md` and any explicit template.
    - Match the local guide when it is prescriptive, and stay lightweight when the guide is intentionally minimal.
 
 5. Preserve the separation rules.
    - Do not write speculation straight into `PLANS.md`.
-   - Do not let worklogs masquerade as decisions.
+   - Do not let execution records masquerade as decisions.
    - Do not let inbox entries become long-term truth.
    - Do not treat research memos as raw transcripts.
 
 6. If the task crosses layers, create multiple artifacts deliberately.
-   - Example: `RSH-*` plus `LOG-*`
+   - Example: `RSH-*` plus a committed `LOG-*`
    - Example: `DEC-*` plus `PLANS.md`
-   - Example: `LOG-*` plus `STATUS.md`
+   - Example: a committed `LOG-*` plus `STATUS.md`
    - Touch multiple layers only when each touched layer has a distinct job.
    - Do not mirror the same evolving thought into every artifact type.
 
 7. If Git commits are created, add commit trailers.
-   - `project: whimbrel`
+   - `project: <project-id>`
    - `agent: <agent-id>`
    - `role: orchestrator|worker|subagent|operator`
-   - `artifacts: <artifact-id>[, <artifact-id>...]`
-   - If commit hooks are enabled, make the commit message pass the local validator before retrying.
-   - Prefer referencing and updating an existing relevant `LOG-*` before creating a new one.
+   - `commit: LOG-...[, LOG-...]`
+   - `artifacts:` is optional and must not contain `LOG-*`
+   - Make the commit message pass the required local validator before retrying.
+   - Use the structured body keys `timestamp:`, `changes:`, `rationale:`, and `checks:` with `notes:` optional.
 
-8. Do not invent an upstream-review workflow inside this repo.
-   - If recurring upstream review becomes necessary later, escalate to add an explicit `upstream-intake/` subsystem instead.
+8. If the task is recurring upstream maintenance and the optional module is enabled, use `upstream-intake/` instead of inventing a parallel workflow.
 
 9. If the task is daily inbox pressure review, cluster and triage capture before routing it.
    - Do not summarize every inbox item by default.
@@ -88,10 +87,10 @@ Use this skill with:
 Escalate instead of guessing when the work:
 
 - changes durable product or system truth
-- changes public device or browser compatibility posture
-- resolves a real policy or workflow conflict
+- changes public contracts or compatibility posture
+- resolves a real policy conflict
 - changes operator-facing workflow in a non-obvious way
-- turns an architecture-research finding into approved runtime work
+- overrides a security-sensitive upstream change
 
 ## Quality Bar
 
@@ -99,4 +98,4 @@ Escalate instead of guessing when the work:
 - sparse promotion
 - clear provenance
 - clean separation of layers
-- runtime-aware recommendations that preserve Whimbrel's static app constraints unless a new decision changes them
+- reusable artifacts instead of external-tool-only outcomes
